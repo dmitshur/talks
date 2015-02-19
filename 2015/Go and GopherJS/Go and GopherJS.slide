@@ -1,0 +1,459 @@
+Go and GopherJS
+18 Feb 2015
+Tags: Go, GopherJS, Web, JavaScript, compiler
+
+Dmitri Shuralyov
+Software Engineer, Triggit
+shurcooL@gmail.com
+https://github.com/shurcooL
+@shurcooL
+
+* Overview
+
+- Go, and what if you _could_ compile it to JavaScript.
+- GopherJS can do that quite well.
+- Demos and examples.
+- Performance, code size, debugging story, etc.
+
+* Go
+
+* Motivation
+
+- "Go is a general-purpose language for building simple, reliable, and fast software. It’s fun to write and a good fit for many use cases including web apps, network services, and command-line tools."
+
+(From [[http://mmcgrana.github.io/2012/09/getting-started-with-go-on-heroku.html]].)
+
+- Great language to write libraries in, functionality becomes available everywhere, just go get and import.
+
+* Good for writing general code
+
+Use packages to abstract out platform-specific implementation details:
+
+- `path/filepath`
+- `os`, `os/exec`
+- `net`, `net/http`
+
+Use general interfaces that can be implemented and provided:
+
+- `io.Reader` and `io.Writer`
+- `vfs.FileSystem`:
+	type FileSystem interface {
+		Opener
+		Lstat(path string) (os.FileInfo, error)
+		Stat(path string) (os.FileInfo, error)
+		ReadDir(path string) ([]os.FileInfo, error)
+		String() string
+	}
+
+* Go target platforms
+
+- OS X, Linux, Windows, arm (Raspberry Pi), arm64 ([[https://twitter.com/davecheney/status/567621293109821440][soon]]), Android (Go 1.4), iOS (Go 1.5~), others.
+- More can be added in a coherent way.
+- One thing missing?
+
+* GopherJS
+
+- GopherJS - A compiler from Go to JavaScript.
+
+- Its main purpose is to give you the opportunity to write front-end code in Go which will still run in all browsers.
+
+- (There are/can be more than one Go -> JS compiler, just like there's `gc` and `gccgo`. It's an implementation detail.)
+
+* GopherJS GitHub Repo
+
+- [[https://github.com/gopherjs/gopherjs]]
+- 1344 commits
+- 2136 stars, 100 watchers
+- 11 open issues (139 closed)
+
+- GopherJS is written in pure Go.
+- It can compile itself, thus [[http://www.gopherjs.org/play/][GopherJS Playground]] is possible.
+
+* What is supported?
+
+- Nearly everything. Including channels, goroutines, select.
+- See [[https://github.com/gopherjs/gopherjs/blob/master/doc/packages.md][compatibility table]] for list of supported packages (with passing tests).
+- Compiler does some heavy lifting to support goroutines, which allows for normal (idiomatic style) Go code.
+
+* Demo.
+
+Easy to get started.
+
+	$ go get -u github.com/gopherjs/gopherjs
+
+	$ gopherjs build
+
+* Reasons to use Go in frontend
+
+- Like Node.js, share common code/logic between frontend and backend components.
+- Familiar tools. `gofmt`, `goimports`, [[https://godoc.org]], `go test`, `go test -bench .`.
+- Familiar types (int, uint16, []byte, string), no need for equality table, static type checking.
+- Familiar compilation errors, *refactoring*.
+- Familiar concurrency, goroutines, blocking receiving, instead of callbacks.
+- Familiar libraries like `net/url`, `time`, `html/template`, third party ones like `blackfriday`, etc.
+- Ability to start from ground up with solid foundation and build high quality, sophisticated and complicated frontend UIs and projects.
+
+* Packages that can be compiled to JavaScript
+
+`go/parser` and `go/printer`
+
+	func process(input string) string {
+		// Parse the AST.
+		fset := token.NewFileSet()
+		fileAst, parseErr := parser.ParseFile(fset, "", input, parser.ParseComments|parser.AllErrors)
+
+		// Print the AST.
+		var config = &printer.Config{Mode: printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
+		var buf bytes.Buffer
+		err := config.Fprint(&buf, fset, fileAst)
+		if err != nil {
+			panic(err)
+		}
+
+		// Append parsing errors, if any.
+		if parseErr != nil {
+			buf.WriteString("\n---\n" + parseErr.Error())
+		}
+
+		return buf.String()
+	}
+
+- [[http://dmitri.shuralyov.com/projects/live-go-printer/live-go-printer.html]]
+
+* Packages that can be compiled to JavaScript
+
+`github.com/russross/blackfriday`
+`github.com/microcosm-cc/bluemonday`
+`github.com/sourcegraph/syntaxhighlight`
+`github.com/shurcooL/go/highlight_go`
+`github.com/shurcooL/go/highlight_diff`
+`go/format`
+`github.com/shurcooL/markdownfmt/markdown`
+
+- [[http://dmitri.shuralyov.com/projects/live-markdown/live-markdown.html]]
+
+* Packages that can be compiled to JavaScript
+
+Achieving all that in the browser took minutes, because existing Go code could be reused:
+
+	import "github.com/shurcooL/go/github_flavored_markdown"
+
+	func run(event dom.Event) {
+		output.SetInnerHTML(string(github_flavored_markdown.Markdown([]byte(input.Value))))
+	}
+
+	func main() {
+		input.AddEventListener("input", false, run)
+		input.Value = initial
+		input.SelectionStart, input.SelectionEnd = len(initial), len(initial)
+		run(nil)
+	}
+
+
+* Running Go code in the browser?
+
+- The browser is a strange execution environment.
+- Even if you can compile Go to JavaScript, it takes getting used to (but it'll be insightful).
+
+.image ./images/browser-1.png 350 _
+
+* Running Go code in the browser?
+
+- To do interesting things, you need to be able to have side effects (other than printing to console).
+
+* APIs in the browser
+
+- DOM API
+- XMLHttpRequest API
+- WebSocket API
+- WebRTC API
+- WebGL API
+- Geolocation API
+- Gamepad API
+- Notification API
+- local file storage, full screen mode, mouse lock APIs
+- ...
+
+* APIs in the browser
+
+.image ./images/browser-2.png 550 _
+
+* GopherJS and JavaScript
+
+[[http://godoc.org/github.com/gopherjs/gopherjs/js]]
+
+Accessing native JavaScript APIs in Go code:
+
+	// document.write("Hello world!");
+
+	js.Global.Get("document").Call("write", "Hello world!")
+
+Providing Go functionality to other JavaScript code:
+
+	someGoFunc := func() {
+		...
+	}
+	js.Global.Set("SomeFunction", someGoFunc)
+
+* Type conversions between Go types and JavaScript types
+
+[[http://godoc.org/github.com/gopherjs/gopherjs/js]]
+
+* APIs in the browser
+
+.image ./images/browser-3.png _ 950
+
+* APIs in the browser
+
+- DOM API: [[https://godoc.org/honnef.co/go/js/dom][honnef.co/go/js/dom]]
+- XMLHttpRequest API: [[https://godoc.org/honnef.co/go/js/xhr][honnef.co/go/js/xhr]]
+- WebSocket API: [[https://godoc.org/github.com/gopherjs/websocket][github.com/gopherjs/websocket]]
+- WebRTC API
+- WebGL API: [[https://godoc.org/github.com/gopherjs/webgl][github.com/gopherjs/webgl]]
+- Geolocation API (part of [[https://godoc.org/honnef.co/go/js/dom][honnef.co/go/js/dom]])
+- Gamepad API
+- Notification API
+- local file storage, full screen mode, mouse lock APIs
+- ...
+
+Source: [[https://github.com/gopherjs/gopherjs/wiki/bindings]]
+
+* APIs in the browser
+
+.image ./images/browser-4.png _ 950
+
+* Bindings to JS libraries
+
+- AngularJS: [[https://godoc.org/github.com/gopherjs/go-angularjs][github.com/gopherjs/go-angularjs]] (GopherJS Playground uses it.)
+- D3: [[https://godoc.org/github.com/iansmith/d3][github.com/iansmith/d3]]
+- jQuery: [[https://godoc.org/github.com/gopherjs/jquery][github.com/gopherjs/jquery]]
+
+* Go Wrappers
+
+- Can always go to JavaScript directly if you need to do something custom or for debugging.
+- E.g., [[https://github.com/shurcooL/frontend/blob/d747e3d6ba5d42003950c40d3302cd6d30afdce3/select-list-view/main.go#L223-L224]]
+
+* GopherJS Issue Resolution Times
+
+- [[https://github.com/gopherjs/gopherjs/issues/150#issuecomment-69047234]]
+
+"Wow, awesome 1 hour fix, that was fast! Thanks!"
+
+- [[https://github.com/gopherjs/gopherjs/issues/147#issuecomment-68966027]]
+
+"Wow, that was fast - thank you very much for your efforts! :)"
+
+- [[https://github.com/gopherjs/gopherjs/issues/156]]
+
+"Great work! Thank you!"
+
+- [[https://github.com/gopherjs/gopherjs/issues/158#issuecomment-70358592]]
+
+"Thanks for your prompt replies!"
+
+- [[https://github.com/gopherjs/gopherjs/issues/163#issuecomment-71109244]]
+
+14 hours to fix a compiler bug.
+
+* GopherJS GitHub Repo
+
+- Over a year ago, [[https://github.com/gopherjs/gopherjs/tree/2b85b2215bc59e76eaf2bd5#what-is-supported]]
+
+* github.com/shurcooL/play/95
+
+Minor change of topic...
+
+[[http://dmitri.shuralyov.com/projects/Terrain-Demo/index.html][Demo]].
+
+View Source: [[http://gotools.org/github.com/shurcooL/play/95]]
+
+(Also github.com/shurcooL/play/97 and github.com/shurcooL/Hover.)
+
+* Other Demos
+
+- [[http://tidwall.github.io/digitalrain/]]
+- [[https://github.com/dimiro1/gopong]]
+- [[http://gotools.org]] (Frontend functionality is written in Go.)
+
+* Compile Errors
+
+* Compile Errors
+
+	output, err := markdown.Process("", 12345, nil)
+	if err != nil {
+		panic(err)
+	}
+
+.image ./images/compile-error.png _ 950
+
+* Compile Errors
+
+	var _ io.Reader = markdownRenderer{}
+
+.image ./images/compile-error-2.png _ 950
+
+* Debugging
+
+* Debugging
+
+- `fmt.Println("hello to println")`
+- panic stack traces
+- (static type checking, compiler errors eliminate a lot of problems)
+
+* Debugging
+
+.image ./images/panic-debugging-4.png
+
+* Debugging
+
+.image ./images/panic-debugging-1.png _ 950
+
+* Debugging
+
+.image ./images/panic-debugging-2.png _ 950
+
+* Debugging
+
+.image ./images/panic-debugging-3.png _ 950
+
+* Debugging
+
+.image ./images/panic-debugging-4.png
+
+* Performance
+
+* Performance
+
+- Not faster than pure hand-written JavaScript
+- Not much slower either, acceptable for most general use
+- Often the slowest part is actual DOM manipulation, etc.
+
+* Performance
+
+- Possible to benchmark via `gopherjs test -bench .`
+- Possible to fallback to JavaScript as "assembly"; rewrite slow parts with careful hand-tuned JS
+- `asm.js` support planned, not yet implemented
+- (PNaCl, etc. might happen in the future, by 2050 browsers may simply support/run Go natively)
+
+* Performance
+
+- [[https://github.com/gopherjs/gopherjs#performance-tips]]
+
+- Careful of more expensive string manipulation (Go uses utf-8, Unicode) if in a tight loop.
+
+- Huge improvements have been made. [[https://github.com/gopherjs/gopherjs/issues/142]] Still plenty of opportunity remaining.
+
+* Size of generated code
+
+- "Hello world" will be large due to fixed size overhead (Go/JS type conversions, etc.).
+- Large program with same imports will be marginally larger.
+- Extremely huge programs with huge recursive imports seem to max out at 200-350 KB.
+
+.image ./images/file-sizes.png _ 900
+
+- [[https://github.com/gopherjs/gopherjs/issues/136#issuecomment-74445407]]
+
+* Limitations
+
+* Limitations
+
+- Need to mark blocking calls on interfaces as `//gopherjs:blocking`, or else. (Read full details [[https://github.com/gopherjs/gopherjs#goroutines][here]].)
+- (Currently [[https://github.com/gopherjs/gopherjs/issues/89][ongoing work]] to improve blocking detection, making that work unneeded.)
+
+.image ./images/panic-stack-trace.png 380 _
+
+* Limitations
+
+- The need to mark `//gopherjs:blocking` prevents implementing blocking `io.Reader`, `net.Conn` interfaces (since you can't easily modify Go standard library to add those comments there).
+
+- [[https://github.com/gopherjs/gopherjs/issues/89]]
+
+- If a blocking `io.Reader` is supported, then it is possible to wrap a [[http://godoc.org/github.com/gopherjs/websocket][websocket]] connection in a way that implements `net.Conn` interface. Doing that will allow using `net/rpc/jsonrpc` package for RPC. It will also allow creating an `http.Client` with a custom `http.Transport` that wraps around [[http://godoc.org/honnef.co/go/js/xhr][xhr]].
+
+* Limitations
+
+- More steps to distribute apps that use GopherJS for frontend.
+- `go generate` can be helpful in pre-compiling and bundling the generated js.
+
+- Limited to one script per html page if you don't want to pay extra price for having two Go "runtimes".
+
+- Still young and evolving, need to be able to adapt quickly, figure out and solve problems. Often travelling a path for the first time.
+- (Minor improvement/API breaking change coming to use js.Object struct pointers rather than interface. See [[https://github.com/gopherjs/gopherjs/issues/174#issuecomment-74112195][issue 174]].)
+
+- Less people familiar with Go than JavaScript, less existing "frameworks".
+
+* Advantages
+
+- Get to use Go and its ecosystem (tools, websites, libraries, errors and type checking).
+
+- Open ended possibilities. Just you, Go code, and whatever you want to create. As simple or sophisticated as you want.
+
+- What would you rather invest into, and deal with 2 years from now? Imagine receiving pull requests, doing code review, maintaing and developing code further, etc.
+
+* Takeaway
+
+Which language you use in the frontend is a _choice_ you have to make.
+
+* Something fun to try at home
+
+- Think of a neat general Go package (or multiple packages) you like, see if it can be compiled with GopherJS and used on a simple web page.
+
+- (Also try the [[http://www.gopherjs.org/play/][GopherJS Playground]].)
+
+* Community
+
+.link https://github.com/gopherjs/gopherjs#community
+
+- GitHub (repo, issues, organization)
+- Google Group
+- IRC channel #GopherJS
+- Slack channel #GopherJS
+- Follow [[https://twitter.com/GopherJS]]
+
+* Thank you
+
+Dmitri Shuralyov
+Software Engineer, Triggit
+[[mailto:shurcooL@gmail.com][shurcooL@gmail.com]]
+[[https://github.com/shurcooL][https://github.com/shurcooL]]
+[[https://twitter.com/shurcooL][@shurcooL]]
+
+* Extras
+
+* Packages that can be compiled to JavaScript
+
+`go/parser` and `go/printer`
+
+	package main
+
+	import ("bytes"; "go/parser"; "go/printer"; "go/token"; "honnef.co/go/js/dom")
+
+	var document = dom.GetWindow().Document()
+
+	var input = document.GetElementByID("input").(*dom.HTMLTextAreaElement)
+	var output = document.GetElementByID("output").(dom.HTMLElement)
+
+	var initial = "package main\n\n..."
+
+	func run(_ dom.Event) {
+		output.SetTextContent(process(input.Value))
+	}
+
+	func main() {
+		input.AddEventListener("input", false, run)
+		input.Value = initial
+		input.SelectionStart, input.SelectionEnd = 153, 153
+		run(nil)
+	}
+
+* Code Samples
+
+	shareIcon := document.GetElementByID("share-icon")
+	shareIcon.AddEventListener("click", false, func(event dom.Event) {
+		event.PreventDefault()
+		fmt.Println("clicked!")
+	})
+
+Setting CSS style of an element.
+
+	shareIcon.Style().SetProperty("display", "none", "")
