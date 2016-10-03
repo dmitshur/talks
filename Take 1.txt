@@ -1,0 +1,41 @@
+
+
+
+
+
+
+
+
+-	Invariably you want to deal with some frontend tech. Pulls you into HTML/CSS/JS.
+
+
+-	Benefits of isomorphism.
+
+
+-	Why I like Go.
+
+
+-	GopherJS history
+	-	Slide to demonstrate the maturity of the project.
+
+-	"Cgo is not Go."
+	-	Similarly, JavaScript is not Go. But you can work around it via wrappers, create nice high level APIs.
+
+-	io.Reader and io.Writer
+	-	Go over impl of
+
+
+
+
+
+
+
+
+
+
+-	Generating HTML.
+	-	fmt.Fprintf()
+	-	html/template
+	-	React-style Render method in Go.
+		-	Promising, but needs work.
+			-	Currently using golang.org/x/net/html package simply because it's familiar, good. Need to write a more dedicated one, friendly towards generation of HTML.

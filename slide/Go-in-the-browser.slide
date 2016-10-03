@@ -1,0 +1,287 @@
+Go in the browser
+10 Oct 2016
+Tags: Go, web, browser, GopherJS, cross-compilation, JavaScript
+
+Dmitri Shuralyov
+Software Engineer, Sourcegraph
+shurcooL@gmail.com
+https://dmitri.shuralyov.com
+@shurcooL
+
+* Overview
+
+- Motivation
+- History
+- Insights
+
+* Motivation
+
+I want to work with Go, but hard to ignore browser in 2016.
+
+- I _really_ like Go. Fun. Easy to be expert in.
+- Types (`int`, `uint16`), type safety, explicitness (*refactoring*), readable blocking code – not callbacks.
+- Isomorphism. Existing Go libraries, commands.
+- Familiar, powerful tooling.
+- (More.)
+
+* Easy to be expert in
+
+.iframe https://golang.org/ref/spec 582 978
+
+* Tooling
+
+- `goimports` (or `gofmt`)
+- [[https://godoc.org]] for package documentation
+- `golint`
+- `go` `test`, `go` `test` `-bench=.`
+
+	$ go test github.com/shurcooL/...
+	$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/...)
+	$ gosimple github.com/shurcooL/...
+	$ staticcheck github.com/shurcooL/...
+	$ unused github.com/shurcooL/...
+	$ unconvert github.com/shurcooL/...
+
+* Go cross-compilation and wide platform support
+
+Go already runs on many platforms.
+
+	# Desktop OSes.
+	GOOS=darwin  GOARCH=arm64 go build
+	GOOS=linux   GOARCH=amd64 go build
+	GOOS=windows GOARCH=arm64 go build
+
+	GOOS=plan9 GOARCH=amd64 go build  # Plan 9.
+	GOOS=linux GOARCH=s390x go build  # Linux on IBM z Systems.
+
+	GOOS=darwin  GOARCH=arm64 go build  # iOS.
+	GOOS=android GOARCH=arm   go build  # Android.
+
+* Go cross-compilation and wide platform support
+
+Very many platforms.
+
+.code go-tool-dist-list.txt
+
+* Go cross-compilation and wide platform support
+
+So why not one more?
+
+.code go-tool-dist-list-js.txt
+
+* GopherJS history
+
+- Aug 27, 2013: Initial commit.
+- Sep 18, 2013: Rename "golang2js" -> "gopher.js".
+- 2013 – 2015: Implement most of Go language specification, vast majority of stdlib tests passing.
+- ??? ??, 2015: Add support for goroutines, channels, select. Requires `//gopherjs:blocking`.
+- ??? ??, 2015: Remove the need for `//gopherjs:blocking`. Now can implement blocking `io.Reader`, `net.Conn`, etc.
+- 2015 – 2016: Not much left to do. (Really minor improvements.)
+- Aug 21, 2016: First named version release, GopherJS 1.7-1 (with Go 1.7 support).
+- Sep 25, 2016: Fix defer with blocking call bug.
+#- Oct 10, 2016: 1800 commits, 4231 stargazers, 175 watchers, 27 contributors, 185 forks.
+
+TODO: Fill in the missing dates.
+
+* js package for accessing JavaScript world
+
+[[https://godoc.org/github.com/gopherjs/gopherjs/js][`github.com/gopherjs/gopherjs/js`]]
+
+- Similar to `"C"` pseudo-package to access C world.
+- But with semantics of `"reflect"` package.
+
+* js package for accessing JavaScript world
+
+.iframe https://godoc.org/github.com/gopherjs/gopherjs/js 582 978
+
+* Cgo is not Go
+
+- Neither is JavaScript.
+- Using `js` package is not pleasant. But only need to touch it "once".
+- Use it internally in wrapper libraries, but expose nice idiomatic Go APIs for users.
+
+* Implementing io.Reader and io.Writer in browser
+
+	package io
+
+	// Reader is the interface that wraps the basic Read method.
+	//
+	// Read reads up to len(p) bytes into p. It returns the number of bytes
+	// read (0 <= n <= len(p)) and any error encountered. Even if Read
+	// returns n < len(p), it may use all of p as scratch space during the call.
+	// If some data is available but not len(p) bytes, Read conventionally
+	// returns what is available instead of waiting for more.
+	//
+	// When Read encounters an error or end-of-file condition after
+	// successfully reading n > 0 bytes, it returns the number of
+	// bytes read. It may return the (non-nil) error from the same call
+	// or return the error (and n == 0) from a subsequent call.
+	// An instance of this general case is that a Reader returning
+	// a non-zero number of bytes at the end of the input stream may
+	// return either err == EOF or err == nil. The next Read should return 0, EOF.
+	//
+	// ...
+	//
+	// Implementations must not retain p.
+	type Reader interface {
+		Read(p []byte) (n int, err error)
+	}
+
+* Implementing io.Reader and io.Writer in browser
+
+	package io
+
+	// Writer is the interface that wraps the basic Write method.
+	//
+	// Write writes len(p) bytes from p to the underlying data stream.
+	// It returns the number of bytes written from p (0 <= n <= len(p))
+	// and any error encountered that caused the write to stop early.
+	// Write must return a non-nil error if it returns n < len(p).
+	// Write must not modify the slice data, even temporarily.
+	//
+	// Implementations must not retain p.
+	type Writer interface {
+		Write(p []byte) (n int, err error)
+	}
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's try to port command `ivy` to run in browser.
+
+.image https://raw.githubusercontent.com/robpike/ivy/master/ivy.jpg
+
+.iframe https://godoc.org/robpike.io/ivy 200 978
+
+* Implementing io.Reader and io.Writer in browser
+
+CLI commands need a stdin, stdout, stderr to run.
+
+.image ivybrowser/ivy-in-terminal.png 532 722
+
+* Implementing io.Reader and io.Writer in browser
+
+Easy to implement inside a terminal:
+
+	var (
+		stdin  io.Reader = os.Stdin
+		stdout io.Writer = os.Stdout
+		stderr io.Writer = os.Stderr
+	)
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's use an <input> and <pre> elements in browser.
+
+.code ivybrowser/index.html
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's use an <input> and <pre> elements in browser.
+
+.code ivybrowser/index.html HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's use an <input> and <pre> elements in browser.
+
+.code ivybrowser/index.html HL2
+
+* Implementing io.Reader and io.Writer in browser
+
+.iframe ivybrowser/demo1/page.html 582 978
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#.iframe https://gotools.org/github.com/shurcooL/ivybrowser 582 978
+
+* Implementing io.Reader and io.Writer in browser
+
+Writer appends to <pre>'s textContent.
+
+.code ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Writer appends to <pre>'s textContent.
+
+.code ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/ HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/ HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/ HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Putting it all together.
+
+.code ivybrowser/init-1.go ,/end OMIT/
+
+* ivy in browser
+
+.iframe ivybrowser/demo2/page.html 582 978
+
+* Implementing io.Reader and io.Writer in browser
+
+Something feels off?
+
+* Implementing io.Reader and io.Writer in browser
+
+We can use `io.TeeReader`.
+
+	// TeeReader returns an io.Reader that writes to w what it reads from r.
+	func TeeReader(r io.Reader, w io.Writer) io.Reader
+
+Like this:
+
+.code ivybrowser/init-2.go /start OMIT/,
+
+* ivy in browser
+
+.iframe ivybrowser/demo3/page.html 582 978
+
+* TODO: More interesting things (as time allows)
+
+- TODO: Implementing `http.RoundTripper` via Fetch API.
+- TODO: Cross-platform library for 3D graphics via build constraints.
+- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
+- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
+- TODO: Mention `net.Conn` via websockets, `net/rpc`.
+- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
+- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
+- TODO: Rehearse many times.
+
+#* 3D demo
+#
+#.iframe https://dmitri.shuralyov.com/projects/Terrain-Demo/ 582 978
+
+#* WebSocket demo
+#
+#.iframe https://dmitri.shuralyov.com/projects/eX0/eX0-go-client/ 582 978
+
+#* Package "golang.org/x/net/html"
+#
+#.iframe https://godoc.org/golang.org/x/net/html 582 978
+
+#* http
+#
+#.iframe https://gotools.org/github.com/gopherjs/gopherjs/compiler/natives/src/net/http 582 978

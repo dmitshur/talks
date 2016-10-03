@@ -1,0 +1,24 @@
+types, type safety, callback hell, refactoring
+
+fmt.Fprintf(w, ...)
+html/template
+x/net/html
+
+refactoring FontColor type from string to RGB
+
+Those who would give up essential Liberty, to purchase a little
+temporary Safety, deserve neither Liberty nor Safety.
+	— Benjamin Franklin
+
+It is no nation we inhabit, but a language.
+Make no mistake; our native tongue is our true fatherland.
+	— Emil Cioran, Romanian philosopher.
+
+$ go test $(go list github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+$ gosimple $(go list github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+$ staticcheck $(go list github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+$ unused $(go list github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+$ unconvert $(go list github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/... | grep -v github.com/shurcooL/play/ | grep -v github.com/shurcooL/Conception-go)
+
+Slinky analogy. Lets you shift more of the "control" and "main app" from backend Go to frontend Go. Backend Go just provides services.
