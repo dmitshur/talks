@@ -19,7 +19,7 @@ https://dmitri.shuralyov.com
 I want to work with Go, but hard to ignore browser in 2016.
 
 - I _really_ like Go. Fun. Easy to be expert in.
-- Types (`int`, `uint16`), type safety, explicitness (*refactoring*), readable blocking code – not callbacks.
+- Types (`int`, `uint16`), type safety, explicitness (*refactoring*), reusability, readable blocking code – not callbacks.
 - Isomorphism. Existing Go libraries, commands.
 - Familiar, powerful tooling.
 - (More.)
@@ -59,13 +59,13 @@ Go already runs on many platforms.
 
 * Go cross-compilation and wide platform support
 
-Very many platforms.
+Many platforms.
 
 .code go-tool-dist-list.txt
 
 * Go cross-compilation and wide platform support
 
-So why not one more?
+How about this one extra?
 
 .code go-tool-dist-list-js.txt
 
