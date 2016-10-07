@@ -1,0 +1,7 @@
+First practice run with Matt
+----------------------------
+
+-	[ ] Get rid of known obvious large sections of code like io.Reader/io.Writer docs.
+-	[ ] Explain _motivation_.
+-	[ ] No ad-hoc code. Too much code, unorganized, messy, hard to follow, etc. Need to distill it more.
+-	[ ] Maybe need to show/explain dom package before using it.

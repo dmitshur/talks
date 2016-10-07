@@ -25,6 +25,8 @@
 -	"Cgo is not Go."
 	-	Similarly, JavaScript is not Go. But you can work around it via wrappers, create nice high level APIs.
 
+-	Probably explain dom package, other wrappers.
+
 -	io.Reader and io.Writer
 	-	Go over impl of ivy's io.go.
 

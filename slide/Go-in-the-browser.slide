@@ -16,7 +16,7 @@ https://dmitri.shuralyov.com
 
 * Motivation
 
-I want to work with Go, but hard to ignore browser in 2016.
+I want to work with Go, but it is hard to ignore the browser in 2016. There are powerful forces at play.
 
 - I _really_ like Go. Fun. Easy to be expert in.
 - Types (`int`, `uint16`), type safety, explicitness (*refactoring*), reusability, readable blocking code – not callbacks.
@@ -26,7 +26,9 @@ I want to work with Go, but hard to ignore browser in 2016.
 
 * Easy to be expert in
 
-.iframe https://golang.org/ref/spec 582 978
+https://golang.org/ref/spec
+
+Go language specification fits on a single large page. Can be read in an afternoon.
 
 * Tooling
 
@@ -94,55 +96,34 @@ TODO: Fill in the missing dates.
 
 .iframe https://godoc.org/github.com/gopherjs/gopherjs/js 582 978
 
+* js package for accessing JavaScript world
+
+TODO: Some examples of basic usage. In JS, and equivalent in Go.
+
 * Cgo is not Go
 
 - Neither is JavaScript.
 - Using `js` package is not pleasant. But only need to touch it "once".
 - Use it internally in wrapper libraries, but expose nice idiomatic Go APIs for users.
 
-* Implementing io.Reader and io.Writer in browser
+* JS bindings
 
-	package io
+- Chrome API: [[https://github.com/fabioberger/chrome][github.com/fabioberger/chrome]]
+- DOM: [[http://honnef.co/go/js/dom][honnef.co/go/js/dom]]
+- EventSource (Server-Sent Events): [[https://godoc.org/github.com/gopherjs/eventsource][github.com/gopherjs/eventsource]]
+- JS builtins: [[https://github.com/gopherjs/jsbuiltin][github.com/gopherjs/jsbuiltin]]
+- JS console: [[http://honnef.co/go/js/console][honnef.co/go/js/console]]
+- localStorage: [[https://github.com/go-humble/locstor][github.com/go-humble/locstor]]
+- WebGL: [[https://github.com/gopherjs/webgl][github.com/gopherjs/webgl]]
+- WebSocket: [[https://github.com/gopherjs/websocket][github.com/gopherjs/websocket]]
+- XHR: [[http://honnef.co/go/js/xhr][honnef.co/go/js/xhr]]
+- AngularJS, D3, jQuery, Polymer, VueJS, PouchDB, QUnit, SQL.js (SQLite3 in the browser), Mithril, Ace, Mousetrap, GLFW, Wade, Promise, more!
 
-	// Reader is the interface that wraps the basic Read method.
-	//
-	// Read reads up to len(p) bytes into p. It returns the number of bytes
-	// read (0 <= n <= len(p)) and any error encountered. Even if Read
-	// returns n < len(p), it may use all of p as scratch space during the call.
-	// If some data is available but not len(p) bytes, Read conventionally
-	// returns what is available instead of waiting for more.
-	//
-	// When Read encounters an error or end-of-file condition after
-	// successfully reading n > 0 bytes, it returns the number of
-	// bytes read. It may return the (non-nil) error from the same call
-	// or return the error (and n == 0) from a subsequent call.
-	// An instance of this general case is that a Reader returning
-	// a non-zero number of bytes at the end of the input stream may
-	// return either err == EOF or err == nil. The next Read should return 0, EOF.
-	//
-	// ...
-	//
-	// Implementations must not retain p.
-	type Reader interface {
-		Read(p []byte) (n int, err error)
-	}
+* JS bindings
 
-* Implementing io.Reader and io.Writer in browser
+TODO: Example of nice high-level idiomatic APIs they expose. E.g., `net/http.Client`, `net.Conn` from websocket package, etc.
 
-	package io
-
-	// Writer is the interface that wraps the basic Write method.
-	//
-	// Write writes len(p) bytes from p to the underlying data stream.
-	// It returns the number of bytes written from p (0 <= n <= len(p))
-	// and any error encountered that caused the write to stop early.
-	// Write must return a non-nil error if it returns n < len(p).
-	// Write must not modify the slice data, even temporarily.
-	//
-	// Implementations must not retain p.
-	type Writer interface {
-		Write(p []byte) (n int, err error)
-	}
+* io.Reader and io.Writer
 
 * Implementing io.Reader and io.Writer in browser
 
@@ -210,18 +191,6 @@ Writer appends to <pre>'s textContent.
 
 Reader waits for Enter key, sends <input>'s value.
 
-.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/
-
-* Implementing io.Reader and io.Writer in browser
-
-Reader waits for Enter key, sends <input>'s value.
-
-.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/ HL1
-
-* Implementing io.Reader and io.Writer in browser
-
-Reader waits for Enter key, sends <input>'s value.
-
 .code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/
 
 * Implementing io.Reader and io.Writer in browser
@@ -229,6 +198,18 @@ Reader waits for Enter key, sends <input>'s value.
 Reader waits for Enter key, sends <input>'s value.
 
 .code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/ HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/ HL1
 
 * Implementing io.Reader and io.Writer in browser
 
