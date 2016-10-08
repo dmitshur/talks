@@ -1,0 +1,2 @@
+-	Slinky analogy.
+-	Single-page apps.

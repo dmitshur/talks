@@ -11,9 +11,9 @@ import (
 var document = dom.GetWindow().Document()
 
 func init() {
-	stdin = NewReader(document.GetElementByID("input").(*dom.HTMLInputElement))
-	stdout = NewWriter(document.GetElementByID("output").(*dom.HTMLPreElement))
-	stderr = NewWriter(document.GetElementByID("output").(*dom.HTMLPreElement))
+	stdin = NewReader(document.GetElementByID("input").(*dom.HTMLInputElement)) // HL
+	stdout = NewWriter(document.GetElementByID("output").(*dom.HTMLPreElement)) // HL
+	stderr = NewWriter(document.GetElementByID("output").(*dom.HTMLPreElement)) // HL
 }
 
 // end OMIT

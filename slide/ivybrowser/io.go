@@ -32,7 +32,7 @@ func NewReader(input *dom.HTMLInputElement) io.Reader {
 
 type reader struct {
 	pending []byte
-	in      chan []byte // This channel is never closed here, so no need to detect it and return io.EOF.
+	in      chan []byte // This channel is never closed, no need to detect it and return io.EOF.
 }
 
 func (r *reader) Read(p []byte) (n int, err error) {
