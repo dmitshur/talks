@@ -28,7 +28,7 @@ I want to use Go, but it's hard to ignore the browser in 2016.
 
 There are forces pulling you away from Go and its tooling. I decided not to give in.
 
-I didn't want to give up:
+I wanted to keep:
 
 - *Refactoring* experience.
 - *Reusability* experience.
@@ -66,21 +66,25 @@ How about one more?
 
 * GopherJS
 
-GopherJS is a compiler that compiles Go to JavaScript, which runs in current browsers.
+GopherJS is a compiler that compiles Go to JavaScript, which runs in browsers.
 
-History:
+.image surfing-gopher.png _ 200
 
-- Aug 2013: Initial commit.
+- August 2013: Initial commit.
 #- Sep 2013: Rename "golang2js" -> "gopher.js".
-- 2013 – 2015: Implement most of Go language specification, most stdlib tests passing.
-- 2015: Goroutines, channels, select statement, requires `//gopherjs:blocking`.
+- 2013: Everything except goroutines, most stdlib tests passing. Can compile itself.
+- 2014: Goroutines, channels, select statement, requires `//gopherjs:blocking`.
+: June 2014.
 - 2015: Remove need for `//gopherjs:blocking`.
-- 2015 – 2016: Not much left. (Really minor improvements.)
-- Aug 2016: First named version release, GopherJS 1.7-1 (with Go 1.7 support).
+: Feburary 2015.
+- 2016: Nothing left. (Minor enhancements.)
+- August 2016: First named version release, GopherJS 1.7-1 (with Go 1.7 support).
 #- Sep 2016: Fix defer with blocking call bug.
 #- Oct 10, 2016: 1800 commits, 4231 stargazers, 175 watchers, 27 contributors, 185 forks.
 
 : Shoutout to Richard "@neelance" Musiol for creating GopherJS and doing most of the heavylifting!
+
+.iframe surfing-gopher-attribution.html 100 978
 
 * js package for accessing JavaScript world
 
@@ -144,6 +148,12 @@ Go equivalent using `js` package:
 
 * JS bindings
 
+Pure Go in frontend mental model:
+
+.image pure-Go-mental-model.png
+
+* JS bindings
+
 Package [[https://honnef.co/go/js/dom][`"honnef.co/go/js/dom"`]] for DOM API.
 
 	func          (Document) GetElementByID(id string) Element
@@ -166,7 +176,7 @@ Package [[https://github.com/gopherjs/websocket][`"github.com/gopherjs/websocket
 	// until the connection is established or fails to connect.
 	func Dial(url string) (net.Conn, error)
 
-Enables use of `net/rpc` or `net/rpc/jsonrpc`.
+Enables use of `net/rpc`, `net/rpc/jsonrpc`.
 
 * JS bindings
 
@@ -188,15 +198,17 @@ Implemented via Fetch API. If unavailable, falls back to XMLHttpRequest API.
 
 Let's try to port command `ivy` to run in browser.
 
-.image https://raw.githubusercontent.com/robpike/ivy/master/ivy.jpg
+.image ivybrowser/ivy.jpg
 
-.iframe https://godoc.org/robpike.io/ivy 200 978
+.image ivybrowser/ivy-godoc.png _ 978
+
+#.iframe https://godoc.org/robpike.io/ivy 200 978
 
 * Implementing io.Reader and io.Writer in browser
 
 CLI commands need a stdin, stdout, stderr to run.
 
-.image ivybrowser/ivy-in-terminal.png 532 722
+.image ivybrowser/ivy-in-terminal.png _ 722
 
 * Implementing io.Reader and io.Writer in browser
 
@@ -278,18 +290,16 @@ Putting it all together.
 
 .iframe ivybrowser/demo2/page.html 582 978
 
-* Implementing io.Reader and io.Writer in browser
-
-Does something feel odd?
+: Does something feel odd?
 
 * Implementing io.Reader and io.Writer in browser
 
 We can use `io.TeeReader`.
 
-	// TeeReader returns an io.Reader that writes to w what it reads from r.
-	func TeeReader(r io.Reader, w io.Writer) io.Reader
-
-Like this:
+#	// TeeReader returns an io.Reader that writes to w what it reads from r.
+#	func TeeReader(r io.Reader, w io.Writer) io.Reader
+#
+#Like this:
 
 .code ivybrowser/init-2.go /start OMIT/,
 
@@ -297,20 +307,98 @@ Like this:
 
 .iframe ivybrowser/demo3/page.html 582 978
 
-* TODO: More interesting things (as time allows)
+* Streaming HTTP response bodies
 
-- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
-- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
-- TODO: Cross-platform library for 3D graphics via build constraints.
-#- TODO: Implementing `http.RoundTripper` via Fetch API.
-#- TODO: Mention `net.Conn` via websockets, `net/rpc`.
-#- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
-- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
-- TODO: Rehearse many times.
+* Streaming HTTP response bodies
+
+.code fetch-streaming/io-copy.go
+
+* Streaming HTTP response bodies
+
+.code fetch-streaming/fetch-stream-processing.js
+
+* Streaming HTTP response bodies
+
+.code fetch-streaming/fetch-stream-processing.go /Search start OMIT/,/Search end OMIT/
+
+.code fetch-streaming/fetch-stream-processing.go /main start OMIT/,/main end OMIT/
+
+* Cross-platform libraries
+
+* Cross-platform libraries
+
+It's possible to create highly cross-platform libraries with build constraints.
+
+	// Package gl is a Go cross-platform binding for OpenGL, with an OpenGL ES 2-like API.
+	//
+	// It supports macOS, Linux and Windows, iOS, Android, modern browsers.
+	package gl
+
+* Cross-platform libraries
+
+macOS, Linux and Windows via OpenGL 2.1 backend.
+
+	// +build 386 amd64
+
+	package gl
+
+	/*
+	... OpenGL headers
+	*/
+	import "C"
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.opengl.org/sdk/docs/man2/xhtml/glDrawArrays.xml
+		C.glowDrawArrays(gpDrawArrays, (C.GLenum)(mode), (C.GLint)(first), (C.GLsizei)(count))
+	}
+
+* Cross-platform libraries
+
+iOS and Android via OpenGL ES 2.0 backend.
+
+	// +build darwin linux
+	// +build arm arm64
+
+	package gl
+
+	/*
+	... OpenGL ES headers
+	*/
+	import "C"
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
+		C.glDrawArrays(mode.c(), C.GLint(first), C.GLsizei(count))
+	}
+
+* Cross-platform libraries
+
+Modern browsers (desktop and mobile) via WebGL 1.0 backend.
+
+	// +build js
+
+	package gl
+
+	import "github.com/gopherjs/gopherjs/js"
+
+	// c is the current WebGL context, or nil if there is no current context.
+	var c *js.Object
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.khronos.org/registry/webgl/specs/1.0/#5.14.11
+		c.Call("drawArrays", mode, first, count)
+	}
+
+* Cross-platform libraries
+
+That way, a single codebase can run everywhere.
+
+- [[Hover-Demo/Hover-Demo.html][Hover Demo]]
 
 * Challenges
 
-- No idiomatic equiavalent to React library yet (but multiple WIPs).
+- No idiomatic equivalent to React library yet (but multiple WIPs).
+- Fewer Go developers than JavaScript developers today. Often trailblazing.
 - Relatively large `.js` output. Viable for single-page apps, not short ad-hoc scripts. Can benefit from improved dead-code eliminaation.
 - Performance is generally good, but some pitfalls exist (up to 10-100x slower).
 - Separate `gopherjs` build tool, can't use `GOARCH=js` `go` `build` `-compiler=gopherjs`.
@@ -322,16 +410,16 @@ Like this:
 
 * Conclusion
 
-- Go is easy to like. Fun. Viable to be an expert.
-- Types (`int`, `uint16`), type safety, explicitness, *refactoring*, *reusability*, blocking code – not callbacks.
-- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering.
-- Isomorphism.
+- Go is easy to like. Fun. Viable to be an expert in it.
+- Types (`int`, `uint16`), compiler errors, *refactoring*, *reusability*, blocking code – not callbacks.
+- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering. Isomorphism.
+: Slinky analogy.
 - Existing Go libraries, commands.
 - Familiar, uniform, powerful tooling and style.
 
 * Tooling
 
-- `goimports` (or `gofmt`) on save
+- `goimports` (or `gofmt`) on save, `gocode` for autocompletion
 - [[https://godoc.org]] for package documentation
 - `golint`
 - `go` `test`, `go` `test` `-bench=.`
@@ -373,3 +461,21 @@ Go made me like frontend programming again. Maybe you'll like it too.
 #.iframe https://gotools.org/github.com/gopherjs/gopherjs/compiler/natives/src/net/http 582 978
 
 #: break (lol using speaker notes to insert an artificial break)
+
+#* Motivation
+#
+#- "Learn fewer things, better. Then try to apply them in many different contexts, and see where they work well, and where they don't. Use failures to identify opportunities to seek new tools that might help broaden your skill set, but only once you've established a clear need."
+#
+#(From [[https://www.oreilly.com/ideas/the-traits-of-a-proficient-programmer]].)
+
+* TODO: More interesting things (as time allows)
+
+- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
+- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
+#- TODO: Cross-platform library for 3D graphics via build constraints.
+#- TODO: Implementing `http.RoundTripper` via Fetch API.
+- TODO: Streaming response body via Fetch via net/http `io.Copy(w,` `resp.Body)`.
+#- TODO: Mention `net.Conn` via websockets, `net/rpc`.
+#- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
+- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
+- TODO: Rehearse many times.
