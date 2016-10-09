@@ -118,12 +118,12 @@ Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopher
 
 Simple JavaScript:
 
-	let elem = window.document.getElementById('my-message');
+	let elem = window.document.getElementById('my-div');
 	elem.textContent = 'Hello from JavaScript!';
 
 Go equivalent using `js` package:
 
-	elem := js.Global.Get("window").Get("document").Call("getElementById", "my-message")
+	elem := js.Global.Get("window").Get("document").Call("getElementById", "my-div")
 	elem.Set("textContent", "Hello from Go!")
 
 * Cgo is not Go
@@ -146,11 +146,11 @@ Go equivalent using `js` package:
 - Chrome API: [[https://github.com/fabioberger/chrome][`github.com/fabioberger/chrome`]]
 - AngularJS, D3, jQuery, Polymer, VueJS, React, PouchDB, QUnit, SQL.js (SQLite3 in the browser), Mithril, Ace, Mousetrap, GLFW, Wade, Promise, more!
 
-* JS bindings
-
-Pure Go in frontend mental model:
-
-.image pure-Go-mental-model.png
+#* JS bindings
+#
+#Pure Go in frontend mental model:
+#
+#.image pure-Go-mental-model.png
 
 * JS bindings
 
@@ -165,7 +165,7 @@ Package [[https://honnef.co/go/js/dom][`"honnef.co/go/js/dom"`]] for DOM API.
 
 Previous example using `dom` package:
 
-	elem := dom.GetWindow().Document().GetElementByID("my-message")
+	elem := dom.GetWindow().Document().GetElementByID("my-div")
 	elem.SetTextContent("Hello from Go")
 
 * JS bindings
@@ -222,19 +222,19 @@ Easy to implement inside a terminal:
 
 * Implementing io.Reader and io.Writer in browser
 
-Let's use an <input> and <pre> elements in browser.
+Let's use an <pre> and <input> elements in browser.
 
 .code ivybrowser/index.html
 
 #* Implementing io.Reader and io.Writer in browser
 #
-#Let's use an <input> and <pre> elements in browser.
+#Let's use an <pre> and <input> elements in browser.
 #
 #.code ivybrowser/index.html HL1
 
 #* Implementing io.Reader and io.Writer in browser
 #
-#Let's use an <input> and <pre> elements in browser.
+#Let's use an <pre> and <input> elements in browser.
 #
 #.code ivybrowser/index.html HL2
 
@@ -412,28 +412,28 @@ That way, a single codebase can run everywhere.
 
 - Go is easy to like. Fun. Viable to be an expert in it.
 - Types (`int`, `uint16`), compiler errors, *refactoring*, *reusability*, blocking code – not callbacks.
-- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering. Isomorphism.
+- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering.
 : Slinky analogy.
 - Existing Go libraries, commands.
 - Familiar, uniform, powerful tooling and style.
 
-* Tooling
-
-- `goimports` (or `gofmt`) on save, `gocode` for autocompletion
-- [[https://godoc.org]] for package documentation
-- `golint`
-- `go` `test`, `go` `test` `-bench=.`
-
-	$ go test github.com/shurcooL/...
-	$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/...)
-	$ gosimple github.com/shurcooL/...
-	$ staticcheck github.com/shurcooL/...
-	$ unused github.com/shurcooL/...
-	$ unconvert github.com/shurcooL/...
-
-- `gorename`
-- `gomvpkg`
-- `guru`
+#* Tooling
+#
+#- `goimports` (or `gofmt`) on save, `gocode` for autocompletion
+#- [[https://godoc.org]] for package documentation
+#- `golint`
+#- `go` `test`, `go` `test` `-bench=.`
+#
+#	$ go test github.com/shurcooL/...
+#	$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/...)
+#	$ gosimple github.com/shurcooL/...
+#	$ staticcheck github.com/shurcooL/...
+#	$ unused github.com/shurcooL/...
+#	$ unconvert github.com/shurcooL/...
+#
+#- `gorename`
+#- `gomvpkg`
+#- `guru`
 
 * Closing thoughts
 
@@ -441,6 +441,8 @@ If you thought Go was fun in the backend, wait until you try it in frontend!
 
 : Mention how cool the browser is. It's always getting better
 : and getting new technologies/APIs. Like WebVR!
+
+#Browsers make for a cool "OS". They implement powerful technologies and capabilities.
 
 Go made me like frontend programming again. Maybe you'll like it too.
 
@@ -468,14 +470,14 @@ Go made me like frontend programming again. Maybe you'll like it too.
 #
 #(From [[https://www.oreilly.com/ideas/the-traits-of-a-proficient-programmer]].)
 
-* TODO: More interesting things (as time allows)
-
-- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
-- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
-#- TODO: Cross-platform library for 3D graphics via build constraints.
-#- TODO: Implementing `http.RoundTripper` via Fetch API.
-- TODO: Streaming response body via Fetch via net/http `io.Copy(w,` `resp.Body)`.
-#- TODO: Mention `net.Conn` via websockets, `net/rpc`.
-#- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
-- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
-- TODO: Rehearse many times.
+#* TODO: More interesting things (as time allows)
+#
+#- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
+#- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
+##- TODO: Cross-platform library for 3D graphics via build constraints.
+##- TODO: Implementing `http.RoundTripper` via Fetch API.
+#- TODO: Streaming response body via Fetch via net/http `io.Copy(w,` `resp.Body)`.
+##- TODO: Mention `net.Conn` via websockets, `net/rpc`.
+##- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
+#- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
+#- TODO: Rehearse many times.

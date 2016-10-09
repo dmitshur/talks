@@ -1,5 +1,5 @@
 var query = 'gopher';
-fetch('/big-data.csv').then(function(response) { // HL
+fetch('/large.csv').then(function(response) { // HL
   var reader = response.body.getReader(); // HL
   var partialRecord = '';
   var decoder = new TextDecoder();

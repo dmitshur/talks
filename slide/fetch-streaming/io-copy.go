@@ -1,7 +1,7 @@
-resp, err := http.Get("https://example.com/")
+resp, err := http.Get("https://example.com/large.csv")
 if err != nil {
 	// handle error
 }
 defer resp.Body.Close()
 
-io.Copy(w, resp.Body) // HL
+io.Copy(os.Stdout, resp.Body) // HL

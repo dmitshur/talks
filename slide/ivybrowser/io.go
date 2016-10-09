@@ -19,7 +19,7 @@ func NewReader(input *dom.HTMLInputElement) io.Reader {
 		ke := event.(*dom.KeyboardEvent)
 		if ke.KeyCode == '\r' {
 			r.in <- []byte(input.Value + "\n") // HL1
-			input.Value = ""
+			input.Value = ""                   // HL1
 			ke.PreventDefault()
 		}
 	})

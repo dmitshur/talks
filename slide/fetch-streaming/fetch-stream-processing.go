@@ -32,7 +32,7 @@ func Search(url, query string) (result string, err error) {
 
 //func main() {
 // main start OMIT
-result, err := Search("/big-data.csv", "gopher")
+result, err := Search("/large.csv", "gopher")
 if err != nil {
 	// handle error
 }
