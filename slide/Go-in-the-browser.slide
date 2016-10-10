@@ -97,10 +97,8 @@ Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopher
 
 Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopherjs/gopherjs/js"`]].
 
-	// Global is JavaScript's global object ("window" for browsers).
-	var Global *js.Object
-
-	type Object
+	// Object is a container for a native JavaScript object.
+	type Object struct {...}
 		func (*Object) String() string
 		func (*Object) Int() int
 		func (*Object) Float() float64
@@ -111,6 +109,10 @@ Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopher
 		func (*Object) Set(key string, value interface{})
 		func (*Object) Call(name string, args ...interface{}) *Object
 		func (*Object) ...
+
+	// Global is JavaScript's global object ("window" for browsers).
+	var Global *js.Object
+
 
 #.iframe https://godoc.org/github.com/gopherjs/gopherjs/js 582 978
 
@@ -316,6 +318,8 @@ We can use `io.TeeReader`.
 * Streaming HTTP response bodies
 
 .code fetch-streaming/fetch-stream-processing.js
+
+.iframe fetch-js-code-attribution.html 100 978
 
 * Streaming HTTP response bodies
 

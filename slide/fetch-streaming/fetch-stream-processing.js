@@ -15,7 +15,6 @@ fetch('/large.csv').then(function(response) { // HL
       return search(); // HL
     })
   }
-
   return search(); // HL
 }).then(function(result) {
   console.log("Got the result! It's '" + result + "'");
