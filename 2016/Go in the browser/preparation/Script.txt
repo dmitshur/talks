@@ -1,0 +1,7 @@
+# This is Go in the browser. I'm Dmitri. [I'm a software engineer at Sourcegraph.]
+
+My goal for this talk is tell you about some interesting uses of Go in the browser, give you an idea of what it can be like.
+
+We'll start off with some motivation, then GopherJS history to give you an idea of the state of Go in the browser, and get into some interesting samples.
+
+There will be quite a bit of code, and we'll go through it quickly. The slides will be up after this.

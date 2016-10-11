@@ -1,0 +1,7 @@
+-	Use dedicard graphics card.
+-	Terminal in fullscreen window to the right, large font.
+
+#cd ~/Dropbox/Public/dmitri/projects/
+#goexec 'http.ListenAndServe(":8080", http.FileServer(http.Dir(".")))'
+
+go install -v github.com/shurcooL/Hover && Hover

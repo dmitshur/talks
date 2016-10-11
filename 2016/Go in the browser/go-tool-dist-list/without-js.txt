@@ -1,0 +1,21 @@
+$ go tool dist list
+android/386                                  linux/s390x
+android/amd64                                nacl/386
+android/arm                                  nacl/amd64p32
+android/arm64                                nacl/arm
+darwin/386                                   netbsd/386
+darwin/amd64                                 netbsd/amd64
+darwin/arm                                   netbsd/arm
+darwin/arm64                                 openbsd/386
+dragonfly/amd64                              openbsd/amd64
+freebsd/386                                  openbsd/arm
+freebsd/amd64                                plan9/386
+freebsd/arm                                  plan9/amd64
+linux/386                                    plan9/arm
+linux/amd64                                  solaris/amd64
+linux/arm                                    windows/386
+linux/arm64                                  windows/amd64
+linux/mips64
+linux/mips64le
+linux/ppc64
+linux/ppc64le

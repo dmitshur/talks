@@ -1,0 +1,16 @@
+First practice run with Matt
+----------------------------
+
+-	[x] Get rid of known obvious large sections of code like io.Reader/io.Writer docs.
+-	[x] Explain _motivation_.
+-	[x] No ad-hoc code. Too much code, unorganized, messy, hard to follow, etc. Need to distill it more.
+-	[x] Maybe need to show/explain dom package before using it.
+
+Second practice run with DC
+---------------------------
+
+-	[x] Mention that we're compiling to the browser as an OS.
+
+"What happens if we compiled Go to the browser as an Operating System"
+
+-	[x] Compress tools slide.

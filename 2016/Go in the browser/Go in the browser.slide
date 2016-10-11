@@ -1,0 +1,487 @@
+Go in the browser
+10 Oct 2016
+Tags: Go, web, browser, GopherJS, cross-compilation, JavaScript
+
+Dmitri Shuralyov
+Software Engineer, Sourcegraph
+shurcooL@gmail.com
+https://dmitri.shuralyov.com
+@shurcooL
+
+#* Overview
+#
+#- Motivation
+#- History
+#- Insights
+
+* The Go Programming Language
+
+[[https://golang.org/ref/spec][https://golang.org/ref/spec]]
+
+: Easy to be expert in
+
+: Go language specification fits on a single large page. Can be read in an afternoon.
+
+* Motivation
+
+I want to use Go, but it's hard to ignore the browser in 2016.
+
+There are forces pulling you away from Go and its tooling. I decided not to give in.
+
+I wanted to keep:
+
+- *Refactoring* experience.
+- *Reusability* experience.
+- (More later.)
+
+* Go cross-compilation and wide platform support
+
+Go already runs on many platforms.
+
+	# Desktop OSes.
+	GOOS=darwin  GOARCH=arm64 go build
+	GOOS=linux   GOARCH=amd64 go build
+	GOOS=windows GOARCH=arm64 go build
+
+	GOOS=plan9 GOARCH=amd64 go build  # Plan 9.
+	GOOS=linux GOARCH=s390x go build  # Linux on IBM z Systems.
+
+	# Mobile OSes.
+	GOOS=darwin  GOARCH=arm64 go build  # iOS.
+	GOOS=android GOARCH=arm   go build  # Android.
+
+* Go cross-compilation and wide platform support
+
+Go already runs on many platforms.
+
+#.code go-tool-dist-list/without-js.txt
+.iframe go-tool-dist-list/without-js.html 582 978
+
+* Go cross-compilation and wide platform support
+
+How about one more?
+
+#.code go-tool-dist-list/with-js.txt
+.iframe go-tool-dist-list/with-js.html 582 978
+
+* GopherJS
+
+GopherJS is a compiler that compiles Go to JavaScript, which runs in browsers.
+
+.image surfing-gopher.png _ 200
+
+- August 2013: Initial commit.
+#- Sep 2013: Rename "golang2js" -> "gopher.js".
+- 2013: Everything except goroutines, most stdlib tests passing. Can compile itself.
+- 2014: Goroutines, channels, select statement, requires `//gopherjs:blocking`.
+: June 2014.
+- 2015: Remove need for `//gopherjs:blocking`.
+: Feburary 2015.
+- 2016: Nothing left. (Minor enhancements.)
+- August 2016: First named version release, GopherJS 1.7-1 (with Go 1.7 support).
+#- Sep 2016: Fix defer with blocking call bug.
+#- Oct 10, 2016: 1800 commits, 4231 stargazers, 175 watchers, 27 contributors, 185 forks.
+
+: Shoutout to Richard "@neelance" Musiol for creating GopherJS and doing most of the heavylifting!
+
+.iframe surfing-gopher-attribution.html 100 978
+
+* js package for accessing JavaScript world
+
+Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopherjs/gopherjs/js"`]].
+
+- Similar to `"C"` pseudo-package to access C world.
+- But with semantics of `"reflect"` package.
+
+* js package for accessing JavaScript world
+
+Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopherjs/gopherjs/js"`]].
+
+	// Object is a container for a native JavaScript object.
+	type Object struct {...}
+		func (*Object) String() string
+		func (*Object) Int() int
+		func (*Object) Float() float64
+		func (*Object) ...
+
+		func (*Object) New(args ...interface{}) *Object
+		func (*Object) Get(key string) *Object
+		func (*Object) Set(key string, value interface{})
+		func (*Object) Call(name string, args ...interface{}) *Object
+		func (*Object) ...
+
+	// Global is JavaScript's global object ("window" for browsers).
+	var Global *js.Object
+
+
+#.iframe https://godoc.org/github.com/gopherjs/gopherjs/js 582 978
+
+* js package for accessing JavaScript world
+
+Simple JavaScript:
+
+	let elem = window.document.getElementById('my-div');
+	elem.textContent = 'Hello from JavaScript!';
+
+Go equivalent using `js` package:
+
+	elem := js.Global.Get("window").Get("document").Call("getElementById", "my-div")
+	elem.Set("textContent", "Hello from Go!")
+
+* Cgo is not Go
+
+- Neither is JavaScript.
+- Using `js` package is not pleasant. But only need to touch it "once".
+- Use it internally in wrapper libraries, but expose nice idiomatic Go APIs for users.
+
+* JS bindings
+
+- DOM: [[https://honnef.co/go/js/dom][`honnef.co/go/js/dom`]]
+- XMLHttpRequest: [[https://honnef.co/go/js/xhr][`honnef.co/go/js/xhr`]]
+- Fetch/XHR (higher-level): `net/http`
+- EventSource (Server-Sent Events): [[https://godoc.org/github.com/gopherjs/eventsource][`github.com/gopherjs/eventsource`]]
+- WebSocket: [[https://github.com/gopherjs/websocket][`github.com/gopherjs/websocket`]]
+- WebGL: [[https://github.com/gopherjs/webgl][`github.com/gopherjs/webgl`]]
+- localStorage: [[https://github.com/go-humble/locstor][`github.com/go-humble/locstor`]]
+- JS console: [[https://honnef.co/go/js/console][`honnef.co/go/js/console`]]
+- JS builtins: [[https://github.com/gopherjs/jsbuiltin][`github.com/gopherjs/jsbuiltin`]]
+- Chrome API: [[https://github.com/fabioberger/chrome][`github.com/fabioberger/chrome`]]
+- AngularJS, D3, jQuery, Polymer, VueJS, React, PouchDB, QUnit, SQL.js (SQLite3 in the browser), Mithril, Ace, Mousetrap, GLFW, Wade, Promise, more!
+
+#* JS bindings
+#
+#Pure Go in frontend mental model:
+#
+#.image pure-Go-mental-model.png
+
+* JS bindings
+
+Package [[https://honnef.co/go/js/dom][`"honnef.co/go/js/dom"`]] for DOM API.
+
+	func          (Document) GetElementByID(id string) Element
+	func (*BasicHTMLElement) OffsetHeight() float64
+	func (*BasicHTMLElement) Focus()
+	func        (*BasicNode) SetTextContent(s string)
+	func        (*BasicNode) ReplaceChild(newChild, oldChild Node)
+	                         ... (951 exported symbols)
+
+Previous example using `dom` package:
+
+	elem := dom.GetWindow().Document().GetElementByID("my-div")
+	elem.SetTextContent("Hello from Go")
+
+* JS bindings
+
+Package [[https://github.com/gopherjs/websocket][`"github.com/gopherjs/websocket"`]] for WebSocket API.
+
+	// Dial opens a new WebSocket connection. It will block
+	// until the connection is established or fails to connect.
+	func Dial(url string) (net.Conn, error)
+
+Enables use of `net/rpc`, `net/rpc/jsonrpc`.
+
+* JS bindings
+
+Package `net/http` (HTTP client only).
+
+	resp, err := http.Get("https://example.com/")
+	if err != nil {
+		// handle error
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	// ...
+
+Implemented via Fetch API. If unavailable, falls back to XMLHttpRequest API.
+
+* io.Reader and io.Writer
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's try to port command `ivy` to run in browser.
+
+.image ivybrowser/ivy.jpg
+
+.image ivybrowser/ivy-godoc.png _ 978
+
+#.iframe https://godoc.org/robpike.io/ivy 200 978
+
+* Implementing io.Reader and io.Writer in browser
+
+CLI commands need a stdin, stdout, stderr to run.
+
+.image ivybrowser/ivy-in-terminal.png _ 722
+
+* Implementing io.Reader and io.Writer in browser
+
+Easy to implement inside a terminal:
+
+	var (
+		stdin  io.Reader = os.Stdin
+		stdout io.Writer = os.Stdout
+		stderr io.Writer = os.Stderr
+	)
+
+* Implementing io.Reader and io.Writer in browser
+
+Let's use an <pre> and <input> elements in browser.
+
+.code ivybrowser/index.html
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#Let's use an <pre> and <input> elements in browser.
+#
+#.code ivybrowser/index.html HL1
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#Let's use an <pre> and <input> elements in browser.
+#
+#.code ivybrowser/index.html HL2
+
+* Implementing io.Reader and io.Writer in browser
+
+.iframe ivybrowser/demo1/page.html 582 978
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#Writer appends to <pre>'s textContent.
+#
+#.code ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Writer appends to <pre>'s textContent.
+
+.code ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/ HL1
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#Reader waits for Enter key, sends <input>'s value.
+#
+#.code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/ HL1
+
+#* Implementing io.Reader and io.Writer in browser
+#
+#Reader waits for Enter key, sends <input>'s value.
+#
+#.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/
+
+* Implementing io.Reader and io.Writer in browser
+
+Reader waits for Enter key, sends <input>'s value.
+
+.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/ HL1
+
+* Implementing io.Reader and io.Writer in browser
+
+Putting it all together.
+
+`io_js.go`
+
+.code ivybrowser/init-1.go ,/end OMIT/
+
+* ivy in browser
+
+.iframe ivybrowser/demo2/page.html 582 978
+
+: Does something feel odd?
+
+* Implementing io.Reader and io.Writer in browser
+
+We can use `io.TeeReader`.
+
+#	// TeeReader returns an io.Reader that writes to w what it reads from r.
+#	func TeeReader(r io.Reader, w io.Writer) io.Reader
+#
+#Like this:
+
+.code ivybrowser/init-2.go /start OMIT/,
+
+* ivy in browser
+
+.iframe ivybrowser/demo3/page.html 582 978
+
+* Streaming HTTP response bodies
+
+* Streaming HTTP response bodies
+
+.code fetch-streaming/io-copy.go
+
+* Streaming HTTP response bodies
+
+.code fetch-streaming/fetch-stream-processing.js
+
+.iframe fetch-js-code-attribution.html 100 978
+
+* Streaming HTTP response bodies
+
+.code fetch-streaming/fetch-stream-processing.go /Search start OMIT/,/Search end OMIT/
+
+.code fetch-streaming/fetch-stream-processing.go /main start OMIT/,/main end OMIT/
+
+* Cross-platform libraries
+
+* Cross-platform libraries
+
+It's possible to create highly cross-platform libraries with build constraints.
+
+	// Package gl is a Go cross-platform binding for OpenGL, with an OpenGL ES 2-like API.
+	//
+	// It supports macOS, Linux and Windows, iOS, Android, modern browsers.
+	package gl
+
+* Cross-platform libraries
+
+macOS, Linux and Windows via OpenGL 2.1 backend.
+
+	// +build 386 amd64
+
+	package gl
+
+	/*
+	... OpenGL headers
+	*/
+	import "C"
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.opengl.org/sdk/docs/man2/xhtml/glDrawArrays.xml
+		C.glowDrawArrays(gpDrawArrays, (C.GLenum)(mode), (C.GLint)(first), (C.GLsizei)(count))
+	}
+
+* Cross-platform libraries
+
+iOS and Android via OpenGL ES 2.0 backend.
+
+	// +build darwin linux
+	// +build arm arm64
+
+	package gl
+
+	/*
+	... OpenGL ES headers
+	*/
+	import "C"
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
+		C.glDrawArrays(mode.c(), C.GLint(first), C.GLsizei(count))
+	}
+
+* Cross-platform libraries
+
+Modern browsers (desktop and mobile) via WebGL 1.0 backend.
+
+	// +build js
+
+	package gl
+
+	import "github.com/gopherjs/gopherjs/js"
+
+	// c is the current WebGL context, or nil if there is no current context.
+	var c *js.Object
+
+	func DrawArrays(mode Enum, first, count int) {
+		// https://www.khronos.org/registry/webgl/specs/1.0/#5.14.11
+		c.Call("drawArrays", mode, first, count)
+	}
+
+* Cross-platform libraries
+
+That way, a single codebase can run everywhere.
+
+- [[Hover-Demo/Hover-Demo.html][Hover Demo]]
+
+* Challenges
+
+- No idiomatic equivalent to React library yet (but multiple WIPs).
+- Fewer Go developers than JavaScript developers today. Often trailblazing.
+- Relatively large `.js` output. Viable for single-page apps, not short ad-hoc scripts. Can benefit from improved dead-code eliminaation.
+- Performance is generally good, but some pitfalls exist (up to 10-100x slower).
+- Separate `gopherjs` build tool, can't use `GOARCH=js` `go` `build` `-compiler=gopherjs`.
+
+* Future
+
+- GopherJS is an AST-based compiler targetting JavaScript specifically. Ready today.
+- Targetting WebAssembly (`wasm`) is the next step, but not yet ready. It won't be GopherJS.
+
+* Conclusion
+
+- Go is easy to like. Fun. Viable to be an expert in it.
+- Types (`int`, `uint16`), compiler errors, *refactoring*, *reusability*, blocking code – not callbacks.
+- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering.
+: Slinky analogy.
+- Existing Go libraries, commands.
+- Familiar, uniform, powerful tooling and style.
+
+#* Tooling
+#
+#- `goimports` (or `gofmt`) on save, `gocode` for autocompletion
+#- [[https://godoc.org]] for package documentation
+#- `golint`
+#- `go` `test`, `go` `test` `-bench=.`
+#
+#	$ go test github.com/shurcooL/...
+#	$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/...)
+#	$ gosimple github.com/shurcooL/...
+#	$ staticcheck github.com/shurcooL/...
+#	$ unused github.com/shurcooL/...
+#	$ unconvert github.com/shurcooL/...
+#
+#- `gorename`
+#- `gomvpkg`
+#- `guru`
+
+* Closing thoughts
+
+If you thought Go was fun in the backend, wait until you try it in frontend!
+
+: Mention how cool the browser is. It's always getting better
+: and getting new technologies/APIs. Like WebVR!
+
+#Browsers make for a cool "OS". They implement powerful technologies and capabilities.
+
+Go made me like frontend programming again. Maybe you'll like it too.
+
+#* 3D demo
+#
+#.iframe https://dmitri.shuralyov.com/projects/Terrain-Demo/ 582 978
+
+#* WebSocket demo
+#
+#.iframe https://dmitri.shuralyov.com/projects/eX0/eX0-go-client/ 582 978
+
+#* Package "golang.org/x/net/html"
+#
+#.iframe https://godoc.org/golang.org/x/net/html 582 978
+
+#* http
+#
+#.iframe https://gotools.org/github.com/gopherjs/gopherjs/compiler/natives/src/net/http 582 978
+
+#: break (lol using speaker notes to insert an artificial break)
+
+#* Motivation
+#
+#- "Learn fewer things, better. Then try to apply them in many different contexts, and see where they work well, and where they don't. Use failures to identify opportunities to seek new tools that might help broaden your skill set, but only once you've established a clear need."
+#
+#(From [[https://www.oreilly.com/ideas/the-traits-of-a-proficient-programmer]].)
+
+#* TODO: More interesting things (as time allows)
+#
+#- TODO: Generating HTML: `fmt.Fprint`, `html/template`, `x/net/html`, ..., React.
+#- TODO: Implementing a Go service, isomorphism, providing a Go client over HTTP.
+##- TODO: Cross-platform library for 3D graphics via build constraints.
+##- TODO: Implementing `http.RoundTripper` via Fetch API.
+#- TODO: Streaming response body via Fetch via net/http `io.Copy(w,` `resp.Body)`.
+##- TODO: Mention `net.Conn` via websockets, `net/rpc`.
+##- TODO: Conclude (maybe) with challenges (pros, cons, solutions), status (what's next, future).
+#- TODO: Trim/cut whatever least interesting doesn't fit in 18 mins.
+#- TODO: Rehearse many times.

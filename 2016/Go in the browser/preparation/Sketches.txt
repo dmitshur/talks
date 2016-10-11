@@ -1,0 +1,22 @@
+types, type safety, callback hell, refactoring
+
+fmt.Fprintf(w, ...)
+html/template
+x/net/html
+
+refactoring FontColor type from string to RGB
+
+Those who would give up essential Liberty, to purchase a little
+temporary Safety, deserve neither Liberty nor Safety.
+	— Benjamin Franklin
+
+It is no nation we inhabit, but a language.
+Make no mistake; our native tongue is our true fatherland.
+	— Emil Cioran, Romanian philosopher.
+
+Slinky analogy. Lets you shift more of the "control" and "main app" from backend Go to frontend Go. Backend Go just provides services.
+
+https://www.oreilly.com/ideas/the-traits-of-a-proficient-programmer - Bridging the gap between competence and proficiency
+> Learn fewer things, better. Then try to apply them in many different contexts, and see where they work well, and where they don't. Use failures to identify opportunities to seek new tools that might help broaden your skill set, but only once you've established a clear need.
+
+-	mention WebVR?
