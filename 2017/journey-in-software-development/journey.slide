@@ -1,0 +1,889 @@
+A journey in software development.
+Or, how to do what you want and get away with it.
+17 Mar 2017
+Tags: software development, Go, open source, Silicon Valley, journey
+
+Dmitri Shuralyov
+shurcooL@gmail.com
+https://dmitri.shuralyov.com
+@shurcooL
+
+* Video
+
+A video of this talk was recorded at University of Ontario Institute of Technology (UOIT) on March 17, 2017.
+
+.image resources/talks/self.png _ 400
+
+Video: [[https://www.youtube.com/watch?v=XSd9OAHVXMI]]
+
+* Programming languages
+
+Which ones have you used? Heard of?
+
+Which ones do you like?
+
+What about frontend?
+
+* Programming languages
+
+Preface:
+
+- Try many languages, keep an open mind.
+
+- Don't be afraid to use what you like.
+
+- Go is somewhat unique. Knowing it can give you an edge.
+
+* Go
+
+* Go
+
+You may have heard of Go.
+
+.link https://golang.org
+
+It's my favorite language. I think you'll like it, too.
+
+* What is Go?
+
+An open source (BSD licensed) project:
+
+- Language specification,
+- Small runtime (garbage collector, scheduler, etc.),
+- Two compilers (`gc` and `gccgo`),
+- 'Batteries included' standard library,
+- Tools (build, fetch, test, document, profile, format),
+- Documentation.
+
+* Go is about composition
+
+Go is Object Oriented, but not in the usual way.
+
+- no classes (methods may be declared on any type)
+- no subtype inheritance
+- interfaces are satisfied implicitly (structural typing)
+
+The result: simple pieces connected by small interfaces.
+
+* Go is about concurrency
+
+Go provides CSP-like concurrency primitives.
+
+- lightweight threads (goroutines)
+- typed thread-safe communication and synchronization (channels)
+
+The result: comprehensible concurrent code.
+
+* Go is about gophers
+
+.image chat/gophers2.png _ 800
+
+.caption _Go_ _gopher_ _by_ _Renée_ _French._
+
+* Core values
+
+Go is about composition, concurrency, and gophers.
+
+Keep that in mind.
+
+* Hello, Go
+
+.play chat/support/hello.go
+
+* Hello, web
+
+.play -edit chat/support/hello-web.go
+
+* Hello, net
+
+.play chat/support/hello-net.go
+
+* Interfaces
+
+Hey neato! We just used `Fprintln` to write to a net connection.
+
+That's because a `Fprintln` writes to an `io.Writer`, and `net.Conn` is an `io.Writer`.
+
+.code chat/support/hello-net.go /Fprintln/
+.code chat/support/defs.go /Fprintln/
+.code chat/support/defs.go /type.Writer/,/^}/
+.code chat/support/defs.go /type.Conn/,/^}/
+
+* An echo server
+
+.play chat/support/echo-no-concurrency.go
+
+#* A closer look at io.Copy
+#
+#.code chat/support/echo-no-concurrency.go /Copy/
+#.code chat/support/defs.go /Copy/,/func/
+#.code chat/support/defs.go /type.Conn/,/^}/
+#.code chat/support/defs.go /type.Writer/,/^}/
+#.code chat/support/defs.go /type.Reader/,/^}/
+
+* Goroutines
+
+Goroutines are lightweight threads that are managed by the Go runtime. To run a function in a new goroutine, just put `"go"` before the function call.
+
+.play chat/support/goroutines.go
+
+* A concurrent echo server
+
+.play chat/support/echo.go
+
+* "Chat roulette"
+
+Let's look at a simple program, based on the "chat roulette" site.
+
+In short:
+
+- a user connects,
+- another user connects,
+- everything one user types is sent to the other.
+
+* Design
+
+The chat program is similar to the echo program. With echo, we copy a connection's incoming data back to the same connection.
+
+For chat, we must copy the incoming data from one user's connection to another's.
+
+Copying the data is easy. The hard part is matching one partner with another.
+
+* Design diagram
+
+.image chat/diagrams.png
+
+* Channels
+
+Goroutines communicate via channels. A channel is a typed conduit that may be synchronous (unbuffered) or asynchronous (buffered).
+
+.play chat/support/chan.go
+
+* Select
+
+A select statement is like a switch, but it selects over channel operations (and chooses exactly one of them).
+
+.play chat/support/select.go
+
+* Modifying echo to create chat
+
+In the accept loop, we replace the call to `io.Copy`:
+
+.code chat/support/echo.go /for {/,/\n	}/
+
+with a call to a new function, `match`:
+
+.code chat/tcp-simple/chat.go /for {/,/\n	}/
+
+* The matcher
+
+The `match` function simultaneously tries to send and receive a connection on a channel.
+
+- If the send succeeds, the connection has been handed off to another goroutine, so the function exits and the goroutine shuts down.
+- If the receive succeeds, a connection has been received from another goroutine. The current goroutine then has two connections, so it starts a chat session between them.
+
+.code chat/tcp-simple/chat.go /var.partner/,/^}/
+
+* The conversation
+
+The chat function sends a greeting to each connection and then copies data from one to the other, and vice versa.
+
+Notice that it launches another goroutine so that the copy operations may happen concurrently.
+
+.code chat/tcp-simple/chat.go /func.chat/,/^}/
+
+* Demo
+
+* Error handling
+
+It's important to clean up when the conversation is over. To do this we send the error value from each `io.Copy` call to a channel, log any non-nil errors, and close both connections.
+
+.code chat/tcp/chat.go /func.chat/,/^}/
+.code chat/tcp/chat.go /func.cp/,/^}/
+
+* Demo
+
+* Next steps
+
+Want to see WebSockets, markov chains, learning bots, TCP and HTTP at once?
+
+.image resources/talks/Go_code_that_grows_with_grace.png _ 400
+
+Video: [[https://vimeo.com/53221560]]
+
+Slides: [[https://talks.golang.org/2012/chat.slide]]
+
+* Journey
+
+* Journey
+
+Started programming at 14.
+
+Excited by the ability to create video games.
+
+* Journey
+
+.image resources/early/ww_in_dev.jpg _ 722
+
+* Journey
+
+.image resources/early/wwEngine_structure.gif _ 722
+
+* Journey
+
+.image resources/early/console_1.jpg _ 722
+
+* Journey
+
+.image resources/early/glPeng1.jpg _ 722
+
+* Journey
+
+.image resources/early/glPeng2.jpg _ 722
+
+* Journey
+
+- wormFX
+- eX0 (C++)
+
+* Journey
+
+Moved towards C++ because it's fast, cross-platform, compiles native binaries.
+
+* Journey
+
+Master's degree.
+
+- Slide demo
+
+* Journey
+
+I realized I wanted to create tools that help people (more directly than games).
+
+Also grew frustrated with C++, extremely motivated to do something about it.
+
+#* Journey
+#
+#- http://paulgraham.com/wealth.html
+#	- Wealth is not the same thing as money.
+
+* Journey
+
+Bret Victor gave an incredible talk on following a _guiding_ _principle_.
+
+.image resources/talks/Inventing_on_Principle.png _ 400
+
+Video: [[https://vimeo.com/36579366]]
+
+# - https://youtu.be/PUv66718DII?t=2289
+: there are many ways to live your life. you can sleepwalk through life, but you don't have. if there's something you feel is wrong, you can fight for a cause. (https://youtu.be/PUv66718DII?t=3199)
+
+* Journey
+
+Started to work on an experimental project.
+
+.image resources/Conception/tweet.png
+
+.caption [[https://twitter.com/shurcooL/status/173110768726839296]]
+
+* Journey
+
+- [[https://github.com/shurcooL/Conception#demonstration][Conception demo video]]
+
+* Journey
+
+Submitted it to a Live Programming Contest at LIVE 2013 Workshop. Won 1st place.
+
+.image resources/Conception/first_prize.png _ 500
+
+* Journey
+
+Got to visit San Francisco.
+
+.image resources/SF/Early/IMG_0357.JPG _ 640
+
+* Journey
+
+.image resources/SF/Early/IMG_0370.JPG _ 722
+
+* Journey
+
+.image resources/SF/IMG_1737.JPG _ 722
+
+* Journey
+
+It helped me land my first job at a startup in San Francisco.
+
+.image resources/SF/Early/IMG_0588.JPG _ 640
+
+* Startup life
+
+- Surrounding yourself with better people is the best way to learn.
+- Value an engineer brings vs company investing into them.
+- First production program feeling.
+- Diagrams and whiteboards are used during high-level discussions, planning.
+- Hiring is really hard.
+#	- startups with lots of money are bottlenecked on people
+#	- as a programmer, you're in demand, and you can say yes/no to things to shape the world - the world you end up living in is partially in your control, as long as you're willing to make sacrifices to achieve that. depends on your priorities.
+#	- story of Pavel Bennett, how well you do on an interview contributes to 50% of your chances.
+- 1 of 10 startups have successful outcome, luck plays a huge role.
+
+* Startup life
+
+- Free food and perks, but you work hard.
+- San Francisco has great weather, tons of events, meetups, great food, but expensive rent and homeless problem.
+
+* Hiring is hard
+
+Startups with lots of raised money are bottlenecked on people.
+
+A real-life story about a star.
+
+* Hiring is hard
+
+.image resources/star/star.png _ 722
+
+* Hiring is hard
+
+.image resources/star/Conception_1_on_HN.png _ 600
+
+* Hiring is hard
+
+.image resources/star/rt.png _ 722
+
+* Hiring is hard
+
+.image resources/star/Joanne.png _ 722
+
+* Hiring is hard
+
+A story about a talented engineer's ups and downs.
+
+* Open source
+
+I like open source because people aren't locked out from being able to contribute.
+
+- One can't be at Apple and Google at once.
+
+* Open source
+
+.image resources/shurcooL_Profile_on_GitHub.png _ 722
+
+* Open source
+
+.iframe resources/PRs_shurcooL.html 600 980
+
+* Open source
+
+#- shurcooL github profile, shurcooL PRs
+
+- [[https://dmitri.shuralyov.com]] has a detailed activity feed.
+#- What contributing to open source is like
+- Why contribute? Because you want/need it yourself. Also to improve your skills, build a reputation, easier to find a job.
+- Ways of contributing: triaging issues, reproducing issues, finding smaller repros, writing code.
+
+* Open source
+
+#- https://github.com/golang/go/commits/master?author=shurcooL
+#	- 1st commit - https://github.com/golang/go/commit/4118665775dd21b2f244e763bfcccba18902d682
+#	- 5th commit - https://github.com/golang/go/commit/912ec1990bd09f8fc128c3fa6b59105085aabc03
+
+It's normal to start small to test the waters.
+
+- My 1st commit - [[https://github.com/golang/go/commit/4118665775dd21b2f244]].
+- My 5th commit - [[https://github.com/golang/go/commit/912ec1990bd09f8fc128]].
+
+* Go community
+
+#- Go, community, GopherCon, dotGo, photo with Andrew, photo with Rob Pike, push rights to google/go-github, etc.
+
+Go is probably my first programming language experience with a "community".
+
+There are conferences, meetups, talks, slack group, etc.
+
+* Go community
+
+.image resources/Go/IMG_1167.JPG _ 722
+
+* Go community
+
+.image resources/Go/IMG_2354.JPG _ 722
+
+* Now
+
+Working full time on open source. Including personal projects (Go Package Store, etc.).
+
+Contributing to Go, GopherJS.
+
+First half of 2017, I'm prioritizing things I think are important (WebAssembly, etc.).
+Second half, I'll be prioritizing ideas that can lead to profitability/sustainability.
+
+* Bonus: Browsers and Go
+
+* Browsers
+
+I want to use Go, but it's hard to ignore the browser in 2017.
+
+* Go cross-compilation and wide platform support
+
+Go already runs on many platforms.
+
+	# Desktop OSes.
+	GOOS=darwin  GOARCH=arm64 go build
+	GOOS=linux   GOARCH=amd64 go build
+	GOOS=windows GOARCH=arm64 go build
+
+	GOOS=plan9 GOARCH=amd64 go build  # Plan 9.
+	GOOS=linux GOARCH=s390x go build  # Linux on IBM z Systems.
+
+	# Mobile OSes.
+	GOOS=darwin  GOARCH=arm64 go build  # iOS.
+	GOOS=android GOARCH=arm   go build  # Android.
+
+* Go cross-compilation and wide platform support
+
+Go already runs on many platforms.
+
+#.code go-tool-dist-list/without-js.txt
+.iframe GopherJS/go-tool-dist-list/without-js.html 582 978
+
+* Go cross-compilation and wide platform support
+
+How about one more?
+
+#.code go-tool-dist-list/with-js.txt
+.iframe GopherJS/go-tool-dist-list/with-js.html 582 978
+
+* GopherJS
+
+GopherJS is a compiler that compiles Go to JavaScript, which runs in browsers.
+
+.link https://github.com/gopherjs/gopherjs
+
+.image GopherJS/surfing-gopher.png _ 200
+
+- August 2013: Initial commit.
+#- Sep 2013: Rename "golang2js" -> "gopher.js".
+- 2013: Everything except goroutines, most stdlib tests passing. Can compile itself.
+- 2014: Goroutines, channels, select statement, requires `//gopherjs:blocking`.
+: June 2014.
+- 2015: Remove need for `//gopherjs:blocking`.
+: Feburary 2015.
+- 2016, 2017: Nothing major left to do. (Minor enhancements.)
+#- August 2016: First named version release, GopherJS 1.7-1 (with Go 1.7 support).
+#- Sep 2016: Fix defer with blocking call bug.
+#- Oct 10, 2016: 1800 commits, 4231 stargazers, 175 watchers, 27 contributors, 185 forks.
+
+: Shoutout to Richard "@neelance" Musiol for creating GopherJS and doing most of the heavylifting!
+
+.iframe GopherJS/surfing-gopher-attribution.html 100 978
+
+#* js package for accessing JavaScript world
+#
+#Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopherjs/gopherjs/js"`]].
+#
+#- Similar to `"C"` pseudo-package to access C world.
+#- But with semantics of `"reflect"` package.
+#
+#* js package for accessing JavaScript world
+#
+#Package [[https://godoc.org/github.com/gopherjs/gopherjs/js][`"github.com/gopherjs/gopherjs/js"`]].
+#
+#	// Object is a container for a native JavaScript object.
+#	type Object struct {...}
+#		func (*Object) String() string
+#		func (*Object) Int() int
+#		func (*Object) Float() float64
+#		func (*Object) ...
+#
+#		func (*Object) New(args ...interface{}) *Object
+#		func (*Object) Get(key string) *Object
+#		func (*Object) Set(key string, value interface{})
+#		func (*Object) Call(name string, args ...interface{}) *Object
+#		func (*Object) ...
+#
+#	// Global is JavaScript's global object ("window" for browsers).
+#	var Global *js.Object
+#
+#
+##.iframe https://godoc.org/github.com/gopherjs/gopherjs/js 582 978
+#
+#* js package for accessing JavaScript world
+#
+#Simple JavaScript:
+#
+#	let elem = window.document.getElementById('my-div');
+#	elem.textContent = 'Hello from JavaScript!';
+#
+#Go equivalent using `js` package:
+#
+#	elem := js.Global.Get("window").Get("document").Call("getElementById", "my-div")
+#	elem.Set("textContent", "Hello from Go!")
+#
+#* Cgo is not Go
+#
+#- Neither is JavaScript.
+#- Using `js` package is not pleasant. But only need to touch it "once".
+#- Use it internally in wrapper libraries, but expose nice idiomatic Go APIs for users.
+#
+#* JS bindings
+#
+#- DOM: [[https://honnef.co/go/js/dom][`honnef.co/go/js/dom`]]
+#- XMLHttpRequest: [[https://honnef.co/go/js/xhr][`honnef.co/go/js/xhr`]]
+#- Fetch/XHR (higher-level): `net/http`
+#- EventSource (Server-Sent Events): [[https://godoc.org/github.com/gopherjs/eventsource][`github.com/gopherjs/eventsource`]]
+#- WebSocket: [[https://github.com/gopherjs/websocket][`github.com/gopherjs/websocket`]]
+#- WebGL: [[https://github.com/gopherjs/webgl][`github.com/gopherjs/webgl`]]
+#- localStorage: [[https://github.com/go-humble/locstor][`github.com/go-humble/locstor`]]
+#- JS console: [[https://honnef.co/go/js/console][`honnef.co/go/js/console`]]
+#- JS builtins: [[https://github.com/gopherjs/jsbuiltin][`github.com/gopherjs/jsbuiltin`]]
+#- Chrome API: [[https://github.com/fabioberger/chrome][`github.com/fabioberger/chrome`]]
+#- AngularJS, D3, jQuery, Polymer, VueJS, React, PouchDB, QUnit, SQL.js (SQLite3 in the browser), Mithril, Ace, Mousetrap, GLFW, Wade, Promise, more!
+#
+##* JS bindings
+##
+##Pure Go in frontend mental model:
+##
+##.image pure-Go-mental-model.png
+#
+#* JS bindings
+#
+#Package [[https://honnef.co/go/js/dom][`"honnef.co/go/js/dom"`]] for DOM API.
+#
+#	func          (Document) GetElementByID(id string) Element
+#	func (*BasicHTMLElement) OffsetHeight() float64
+#	func (*BasicHTMLElement) Focus()
+#	func        (*BasicNode) SetTextContent(s string)
+#	func        (*BasicNode) ReplaceChild(newChild, oldChild Node)
+#	                         ... (951 exported symbols)
+#
+#Previous example using `dom` package:
+#
+#	elem := dom.GetWindow().Document().GetElementByID("my-div")
+#	elem.SetTextContent("Hello from Go")
+#
+#* JS bindings
+#
+#Package [[https://github.com/gopherjs/websocket][`"github.com/gopherjs/websocket"`]] for WebSocket API.
+#
+#	// Dial opens a new WebSocket connection. It will block
+#	// until the connection is established or fails to connect.
+#	func Dial(url string) (net.Conn, error)
+#
+#Enables use of `net/rpc`, `net/rpc/jsonrpc`.
+#
+#* JS bindings
+#
+#Package `net/http` (HTTP client only).
+#
+#	resp, err := http.Get("https://example.com/")
+#	if err != nil {
+#		// handle error
+#	}
+#	defer resp.Body.Close()
+#	body, err := ioutil.ReadAll(resp.Body)
+#	// ...
+#
+#Implemented via Fetch API. If unavailable, falls back to XMLHttpRequest API.
+#
+#* io.Reader and io.Writer
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Let's try to port command `ivy` to run in browser.
+#
+#.image GopherJS/ivybrowser/ivy.jpg
+#
+#.image GopherJS/ivybrowser/ivy-godoc.png _ 978
+#
+##.iframe https://godoc.org/robpike.io/ivy 200 978
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#CLI commands need a stdin, stdout, stderr to run.
+#
+#.image GopherJS/ivybrowser/ivy-in-terminal.png _ 722
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Easy to implement inside a terminal:
+#
+#	var (
+#		stdin  io.Reader = os.Stdin
+#		stdout io.Writer = os.Stdout
+#		stderr io.Writer = os.Stderr
+#	)
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Let's use an <pre> and <input> elements in browser.
+#
+#.code GopherJS/ivybrowser/index.html
+#
+##* Implementing io.Reader and io.Writer in browser
+##
+##Let's use an <pre> and <input> elements in browser.
+##
+##.code ivybrowser/index.html HL1
+#
+##* Implementing io.Reader and io.Writer in browser
+##
+##Let's use an <pre> and <input> elements in browser.
+##
+##.code ivybrowser/index.html HL2
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#.iframe GopherJS/ivybrowser/demo1/page.html 582 978
+#
+##* Implementing io.Reader and io.Writer in browser
+##
+##Writer appends to <pre>'s textContent.
+##
+##.code ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Writer appends to <pre>'s textContent.
+#
+#.code GopherJS/ivybrowser/io.go /NewWriter start OMIT/,/NewWriter end OMIT/ HL1
+#
+##* Implementing io.Reader and io.Writer in browser
+##
+##Reader waits for Enter key, sends <input>'s value.
+##
+##.code ivybrowser/io.go /reader start OMIT/,/reader end OMIT/
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Reader waits for Enter key, sends <input>'s value.
+#
+#.code GopherJS/ivybrowser/io.go /reader start OMIT/,/reader end OMIT/ HL1
+#
+##* Implementing io.Reader and io.Writer in browser
+##
+##Reader waits for Enter key, sends <input>'s value.
+##
+##.code ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Reader waits for Enter key, sends <input>'s value.
+#
+#.code GopherJS/ivybrowser/io.go /NewReader start OMIT/,/NewReader end OMIT/ HL1
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#Putting it all together.
+#
+#`io_js.go`
+#
+#.code GopherJS/ivybrowser/init-1.go ,/end OMIT/
+#
+#* ivy in browser
+#
+#.iframe GopherJS/ivybrowser/demo2/page.html 582 978
+#
+#: Does something feel odd?
+#
+#* Implementing io.Reader and io.Writer in browser
+#
+#We can use `io.TeeReader`.
+#
+##	// TeeReader returns an io.Reader that writes to w what it reads from r.
+##	func TeeReader(r io.Reader, w io.Writer) io.Reader
+##
+##Like this:
+#
+#.code GopherJS/ivybrowser/init-2.go /start OMIT/,
+#
+#* ivy in browser
+#
+#.iframe GopherJS/ivybrowser/demo3/page.html 582 978
+#
+#* Streaming HTTP response bodies
+#
+#* Streaming HTTP response bodies
+#
+#.code GopherJS/fetch-streaming/io-copy.go
+#
+#* Streaming HTTP response bodies
+#
+#.code GopherJS/fetch-streaming/fetch-stream-processing.js
+#
+#.iframe GopherJS/fetch-js-code-attribution.html 100 978
+#
+#* Streaming HTTP response bodies
+#
+#.code GopherJS/fetch-streaming/fetch-stream-processing.go /Search start OMIT/,/Search end OMIT/
+#
+#.code GopherJS/fetch-streaming/fetch-stream-processing.go /main start OMIT/,/main end OMIT/
+#
+#* Cross-platform libraries
+#
+#* Cross-platform libraries
+#
+#It's possible to create highly cross-platform libraries with build constraints.
+#
+#	// Package gl is a Go cross-platform binding for OpenGL, with an OpenGL ES 2-like API.
+#	//
+#	// It supports macOS, Linux and Windows, iOS, Android, modern browsers.
+#	package gl
+#
+#* Cross-platform libraries
+#
+#macOS, Linux and Windows via OpenGL 2.1 backend.
+#
+#	// +build 386 amd64
+#
+#	package gl
+#
+#	/*
+#	... OpenGL headers
+#	*/
+#	import "C"
+#
+#	func DrawArrays(mode Enum, first, count int) {
+#		// https://www.opengl.org/sdk/docs/man2/xhtml/glDrawArrays.xml
+#		C.glowDrawArrays(gpDrawArrays, (C.GLenum)(mode), (C.GLint)(first), (C.GLsizei)(count))
+#	}
+#
+#* Cross-platform libraries
+#
+#iOS and Android via OpenGL ES 2.0 backend.
+#
+#	// +build darwin linux
+#	// +build arm arm64
+#
+#	package gl
+#
+#	/*
+#	... OpenGL ES headers
+#	*/
+#	import "C"
+#
+#	func DrawArrays(mode Enum, first, count int) {
+#		// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glDrawArrays.xml
+#		C.glDrawArrays(mode.c(), C.GLint(first), C.GLsizei(count))
+#	}
+#
+#* Cross-platform libraries
+#
+#Modern browsers (desktop and mobile) via WebGL 1.0 backend.
+#
+#	// +build js
+#
+#	package gl
+#
+#	import "github.com/gopherjs/gopherjs/js"
+#
+#	// c is the current WebGL context, or nil if there is no current context.
+#	var c *js.Object
+#
+#	func DrawArrays(mode Enum, first, count int) {
+#		// https://www.khronos.org/registry/webgl/specs/1.0/#5.14.11
+#		c.Call("drawArrays", mode, first, count)
+#	}
+#
+#* Cross-platform libraries
+#
+#That way, a single codebase can run everywhere.
+#
+#- [[GopherJS/Hover-Demo/Hover-Demo.html][Hover Demo]]
+#
+#* Challenges
+#
+#- No idiomatic equivalent to React library yet (but multiple WIPs).
+#- Fewer Go developers than JavaScript developers today. Often trailblazing.
+#- Relatively large `.js` output. Viable for single-page apps, not short ad-hoc scripts. Can benefit from improved dead-code eliminaation.
+#- Performance is generally good, but some pitfalls exist (up to 10-100x slower).
+#- Separate `gopherjs` build tool, can't use `GOARCH=js` `go` `build` `-compiler=gopherjs`.
+#
+#* Future
+#
+#- GopherJS is an AST-based compiler targetting JavaScript specifically. Ready today.
+#- Targetting WebAssembly (`wasm`) is the next step, but not yet ready. It won't be GopherJS.
+#
+#* Conclusion
+#
+#- Go is easy to like. Fun. Viable to be an expert in it.
+#- Types (`int`, `uint16`), compiler errors, *refactoring*, *reusability*, blocking code – not callbacks.
+#- No friction moving between backend ↔ frontend. Reuse common business logic, validation, rendering.
+#: Slinky analogy.
+#- Existing Go libraries, commands.
+#- Familiar, uniform, powerful tooling and style.
+#
+#* Closing thoughts
+#
+#If you think Go is fun on the backend, wait until you try it on frontend!
+#
+#: Mention how cool the browser is. It's always getting better
+#: and getting new technologies/APIs. Like WebVR!
+#
+##Browsers make for a cool "OS". They implement powerful technologies and capabilities.
+#
+#Go made me like frontend programming again. Maybe you'll like it too.
+
+* Want to see more?
+
+.image resources/talks/Go_in_the_browser.png _ 400
+
+Video: [[http://www.thedotpost.com/2016/10/dmitri-shuralyov-go-in-the-browser]]
+
+Slides: [[https://dmitri.shuralyov.com/talks/2016/Go-in-the-browser/Go-in-the-browser.slide]]
+
+#* Left over
+#
+##- Importance of role models, surrounding yourself with people better than you.
+#- on egos, caring about product rather than you being right first time
+#- brick walls, going after what you want, having leverage and shaping world around you
+##- first PR is small to test waters, 2nd can be large
+#- don’t personalize your code, esp in open source
+#- simplicity, better to write readable code, be clear rather than smart, less is more
+#
+#- Story of Feross http://feross.org/about/
+#
+#: - In September 2010, I built YouTube Instant (a really fast way to search YouTube) in just 3 hours as a bet with my roommate. The site garnered immediate worldwide media attention — 1 million visitors in 10 days, and hundreds of news stories. Chad Hurley, CEO and co-founder of YouTube, was so impressed that he immediately offered me a job at YouTube (which I had to turn down in order to finish my degree).
+#
+#* Left over
+#
+#- Installing Go, packages, import paths, GOPATH.
+#- [[https://godoc.org]], [[https://gotools.org]].
+#- [[https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript]]
+#- maybe: [[https://twitter.com/tjholowaychuk/status/834565731538739200]]
+#- eX0-go
+#- [[dmitri.shuralyov.com/projects]]
+#- Go Package Store
+##- UML diagrams at work?
+#- code should not be personalized
+#
+#* Left over
+#
+#Go does better than C++:
+#
+#- no header files, can re-arrange types, funcs, move between files effortlessly.
+#- gofmt
+#- types like int16, uint64 out of the box.
+#- readable type declaration, left-to-right.
+#- zero values, safer (would avoid so many heartbleeds and such)
+#- https://gist.github.com/shurcooL/86949a392dcdac1f94cf - The experience of compiling Go and C++ projects.
+#
+#* Left over
+#
+#Go tooling:
+#
+#- `goimports` (or `gofmt`) on save, `gocode` for autocompletion
+#- [[https://godoc.org]] for package documentation
+#- `golint`
+#- `go` `test`, `go` `test` `-bench=.`
+#
+#	$ go test github.com/shurcooL/...
+#	$ go tool vet $(go list -f '{{.Dir}}' github.com/shurcooL/...)
+#	$ staticcheck github.com/shurcooL/...
+#	$ gosimple github.com/shurcooL/...
+#	$ unused github.com/shurcooL/...
+#	$ unconvert github.com/shurcooL/...
+#
+#- `gorename`
+#- `gomvpkg`
+#- `guru`

@@ -1,0 +1,44 @@
+2nd year, 50 students (means around 35 coming to the class), 80 minutes class including questions, usually I do 40 slides without demos; (but i guess you would incorporate demos). They know basic programming language. a lot of the course is about UML diagram and how to map it to code.
+
+- My journey as a developer, starting from Conception to first prize, to Triggit, SG, today.
+- Startup life, San Francisco.
+- Go.
+- UML diagrams at work.
+- Open source.
+- Masters vs PhD, industry.
+
+Title: A journey in software development, or how to do what you want and get away with it
+
+Abstract: In this talk, Dmitri will describe his current journey as a software engineer. Starting from completing his Master's Degree at York University, to working at startups in San Francisco, California, and building experimental projects and contributing to open source. He will show demos of 3D video games, frontend and backend development, internet networking techniques, and various little projects he has created, and explain how Go became his favorite programming language.
+
+---
+
+//ideas:
+//- importance of role models, surrounding yourself with people better than you
+//- on egos, caring about product rather than you being right first time
+//- brick walls, going after what you want, having leverage and shaping world around you
+//- first PR is small to test waters, 2nd can be large
+//- don’t personalize your code, esp in open source
+//- simplicity, better to write readable code, be clear rather than smart, less is more
+
+---
+
+//https://twitter.com/shurcooL/status/746198575684583429 - photo with Rob Pike, Renee French, Francesc Campoy.
+//https://news.ycombinator.com/item?id=8907056 - Conception #1 on HN.
+
+//Go does better than C++:
+//- no header files, can re-arrange types, funcs, move between files effortlessly.
+//- gofmt
+//- types like int16, uint64 out of the box.
+//- readable type declaration, left-to-right.
+//- zero values, safer (would avoid so many heartbleeds and such)
+//- https://gist.github.com/shurcooL/86949a392dcdac1f94cf - The experience of compiling Go and C++ projects.
+
+---
+
+//# Go: code that grows with grace
+//https://vimeo.com/53221560
+//https://talks.golang.org/2012/chat.slide
+//
+//# Bret Victor - Inventing on Principle
+//https://vimeo.com/36579366

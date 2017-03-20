@@ -1,0 +1,64 @@
+- intro: I want to give you a short intro to Go, tell about my journey as a software engineer, share stories, show demos, recommend talks, inspire you?
+- ask about what programming languages audience knows, has used, likes. backend? frontend (JS only)?
+- Go introduction, https://golang.org, chat slides
+
+- started programming at young age, excited by ability to create games (demos?)
+	- early screenshots
+	- eX0 C++
+- moved towards C++ because it's fast, cross platform, compiles native binaries
+- Master's degree
+	- Slide demo
+- wanted to create tools that help people (more directly than games)
+	- grew frustrated with C++
+- http://paulgraham.com/wealth.html
+	- Wealth is not the same thing as money.
+- Bret Victor, doing what I want, following a guiding principle, value and wealth
+	- https://youtu.be/PUv66718DII?t=2289
+	- there are many ways to live your life. you can sleepwalk through life, but you don't have. if there's something you feel is wrong, you can fight for a cause. (https://youtu.be/PUv66718DII?t=3199)
+- spent a year working on Conception
+	- https://twitter.com/shurcooL/status/173110768726839296
+	- demo video
+- Conception won 1st place, go to visit SF, helped land my first job at a startup in SF
+- Triggit, San Francisco, Silicon Valley, living, atmosphere?
+	- surrounding yourself with good people is the best way to learn
+	- value an engineer brings vs company investing into them,
+	- first production program,
+	- hiring is hard and star by rtecco
+		- startups with lots of money are bottlenecked on people
+		- as a programmer, you're in demand, and you can say yes/no to things to shape the world - the world you end up living in is partially in your control, as long as you're willing to make sacrifices to achieve that. depends on your priorities.
+		- story of Pavel Bennett, how well you do on an interview contributes to 50% of your chances.
+	- 1/10 startups end successfully, luck
+- open source
+	- I like open source because people aren't locked out from contributing
+	- shurcooL github profile, shurcooL PRs
+	- dmitri.shuralyov.com index
+	- what contributing to open source is like
+	- ways of contributing: triaging issues, reproducing issues, finding smaller repros, code
+	- why? because you want/need it yourself
+- Go, community, GopherCon, dotGo, photo with Andrew, photo with Rob Pike, push rights to google/go-github, etc.
+- https://github.com/golang/go/commits/master?author=shurcooL
+	- 1st commit - https://github.com/golang/go/commit/4118665775dd21b2f244e763bfcccba18902d682
+	- 5th commit - https://github.com/golang/go/commit/912ec1990bd09f8fc128c3fa6b59105085aabc03
+
+- GopherJS
+
+- now?
+- conclusion?
+
+left:
+- Story of Feross http://feross.org/about/
+	- In September 2010, I built YouTube Instant (a really fast way to search YouTube) in just 3 hours as a bet with my roommate. The site garnered immediate worldwide media attention — 1 million visitors in 10 days, and hundreds of news stories. Chad Hurley, CEO and co-founder of YouTube, was so impressed that he immediately offered me a job at YouTube (which I had to turn down in order to finish my degree).
+- Installing Go, packages, import paths, GOPATH.
+	- godoc.org, gotools.org
+- GopherJS?
+	- https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript?
+	- maybe: https://twitter.com/tjholowaychuk/status/834565731538739200
+- eX0-go
+- dmitri.shuralyov.com/projects
+- Go Package Store
+- UML diagrams at work?
+- code should not be personalized
+
+tiny maybes:
+- Randy Pausch Last Lecture: Achieving Your Childhood Dreams, "brick walls".
+- https://dmitri.shuralyov.com/projects/tictactoe/
