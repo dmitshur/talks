@@ -1,0 +1,541 @@
+githubql—a Go client for GitHub GraphQL API
+28 Jun 2017
+Tags: Go, GraphQL, GitHub, API, client
+
+Dmitri Shuralyov
+shurcooL@gmail.com
+https://dmitri.shuralyov.com
+@shurcooL
+
+* Video
+
+A video of this talk was recorded at the [[https://twitter.com/GDGBerlinGolang/status/880140665379803136][Berlin Go Meetup]] on June 28, 2017.
+
+.image video.png _ 400
+
+Video: [[https://www.youtube.com/watch?v=mEqJbeAazow]]
+
+* Bio
+
+I'm Dmitri Shuralyov, a software engineer. Using Go for 4 years, coming from C++ background.
+
+Working on open source Go, including the Go project, GopherJS, various open source Go packages.
+
+I value correctness and simplicity.
+
+* Agenda
+
+- Intro to GraphQL
+- How githubql got started
+- Design decisions
+
+* Intro to GraphQL
+
+A data query language developed internally by Facebook in 2012, publicly released in 2015.
+
+An alternative to REST and ad-hoc webservice architectures.
+
+* REST vs GraphQL
+
+REST:
+
+	https://api.example.com/resources/       - GET, PUT, POST, DELETE
+	https://api.example.com/resources/item17 - GET, PUT, POST, DELETE
+
+GraphQL:
+
+	https://api.example.com/graphql - POST (GET only for introspection)
+	query {
+	  viewer {
+	    login
+	    bio
+	  }
+	}
+: ---
+	{
+	  "data": {
+	    "viewer": {
+	      "login": "gopher",
+	      "bio": "I've been around the world, from Toronto to Berlin.",
+	    }
+	  }
+	}
+
+* Intro to GraphQL
+
+GraphQL is an architectural and conceptual shift from REST APIs.
+
+Type safety, introspection, generated documentation, and predictable responses.
+
+* How githubql got started
+
+In 2016, GitHub [[https://githubengineering.com/the-github-graphql-api/][announced]] their API v4 will be available through GraphQL.
+
+On May 22, 2017, GitHub [[https://github.com/blog/2359-introducing-github-marketplace-and-more-tools-to-customize-your-workflow#user-content-github-graphql-api][announced]] GitHub GraphQL API v4 is out of Early Access.
+
+* How githubql got started
+
+I'm a maintainer and contributor of `github.com/google/go-github/github` package, which implements GitHub REST API v3 client.
+
+Created issue [[https://github.com/google/go-github/issues/646][google/go-github#646]] to track v4 support.
+
+* How githubql got started
+
+No Go clients for GraphQL to be seen. [[http://graphql.org/code/]]
+
+Implementing one requires investigation, discovery, experimentation.
+
+* Initial observations
+
+- Very likely to be generation-friendly.
+- First general idea that came to mind is a `json.Unmarshal`-like API, but the challenge is figuring out the details.
+- Maybe not viable to create a helpful Go GrahpQL client, maybe ad-hoc requests are better.
+- Solution is not GitHub-specific, but GraphQL-specific.
+- Go GraphQL servers tend to rely on GraphiQL for client.
+
+* *5 days of work later*
+
+* Experience and insights
+
+3 different high-level approaches for a Go GraphQL client library:
+
+1. User provides only the *query*; the library constructs a new type or uses an existing type to populate response into and returns it.
+
+2. User provides only the *Go* *type* to populate response into; the library constructs the query.
+
+3. User provides (to the library) *both* the query, and the type to populate response into.
+
+* Experience and insights
+
+Option 3 is easiest to implement, most flexible, safest approach.
+
+Puts the most burden on the user, usage is more verbose. User needs to manually keep the query and response type in sync.
+
+* Experience and insights
+
+Very direct relationship between the GraphQL query, and the response type.
+
+Would be very unfortunate to make the user provide both, and not leverage that they have a tight mapping.
+
+* Experience and insights
+
+Started by thinking/prototyping about APIs that use option 1 or 2, because they lead to best outcome if viable.
+
+If not viable, then no choice but to fall back to 3.
+
+* Experience and insights
+
+What I've created so far (option 2) seems promising.
+
+Hopefully it scales to all advanced GraphQL queries (so far so good).
+
+* Design decisions
+
+* Option 1 (provide query) vs Option 2 (provide response type)
+
+Option 1-style API:
+
+	// User passes a GraphQL query as string, library constructs a response and returns it.
+	var query string = `query {
+	    viewer {
+	        login
+	        createdAt
+	    }
+	}`
+	resp, err := githubqlClient.Do(ctx, query)
+	if err != nil {
+	    // handle error
+	}
+
+	// The exact type of resp is unclear. If it's interface{}, then using it will be very hard
+	// because you'll constantly need to do type assertions... So it has to be predeclared types.
+	fmt.Println("current user:", resp) // ?
+
+* Option 1 (provide query) vs Option 2 (provide response type)
+
+Option 2-style API:
+
+	// User passes a response type, and library constructs a corresponding GraphQL query from it.
+	var query struct {
+	    Viewer struct {
+	        Login     githubql.String
+	        CreatedAt githubql.DateTime
+	    }
+	}
+	err := githubqlClient.Do(ctx, &query)
+	if err != nil {
+	    // handle error
+	}
+
+	// This is very clear, readable and obvious. No surprises. You use what you constructed.
+	fmt.Println("current user:", query.Viewer.Login, query.Viewer.CreatedAt)
+
+* Option 1 (provide query) vs Option 2 (provide response type)
+
+Both options looked quite reasonable.
+
+They have tradeoffs.
+
+* Option 1 (provide query)
+
+Advantages:
+
+- Use GraphQL queries directly and easily, it's just a string.
+- Good for complicated GraphQL queries that are hard to represent with Go type system.
+- All GraphQL queries will be possible, even if GraphQL spec changes to support more exotic syntax.
+
+Disadvantages:
+
+- Response it returns would either have to be a predeclared type that contains all possible fields...
+- Or, it uses reflection and creates a custom type that contains only the needed fields, returns as `interface{}` or `map[string]interface{}`.
+
+* Option 2 (provide response type)
+
+Advantages:
+
+- Makes it very clear what the response type will be and what it'll contain - it's exactly what you write.
+
+Disadvantages:
+
+- You have to express a GraphQL query using Go type, which might not be as obvious or intuitive.
+- There may be some exotic GraphQL query syntax that wouldn't be possible to express.
+
+* Going with Option 2 (for now)
+
+Considered both, but started to lean more towards option 2.
+
+It seemed riskier, but larger payoff if it worked out.
+
+Next, I'll discuss challenges and solutions of option 2-style API.
+
+* GraphQL arguments
+
+How to represent this GraphQL query?
+
+	query {
+	    repository(owner: "octocat", name: "Hello-World") {
+	        description
+	    }
+	}
+
+If you write:
+
+	var q struct {
+	    Repository struct {
+	        Description githubql.String
+	    }
+	}
+
+Not obvious how to express that repository should have arguments owner "octocat" and name "Hello-World".
+
+* GraphQL arguments
+
+First attempt to use a special field named `Arguments`:
+
+	var q struct {
+	    Repository struct {
+	        Arguments githubql.RepositoryArguments
+
+	        Description githubql.String
+	    }
+	}
+	q.Repository.Arguments = githubql.RepositoryArguments{Owner: "octocat", Name: "Hello-World"}
+
+* GraphQL arguments
+
+Worked initially for simple queries, but proved not to scale well.
+
+	var q struct {
+	    Repository struct {
+	        Issue struct {
+	            Comments struct {
+	                Nodes []struct {
+	                    Author struct {
+	                        Login githubql.String
+
+	                        // How to provide an (size: 72) argument to AvatarURL here?
+	                        // q.Repository.Issue.Comments.Nodes is an empty slice...
+	                        AvatarURL graphql.URI
+
+* GraphQL arguments
+
+Came up with the idea of putting arguments into Go's struct field tags:
+
+	var q struct {
+	    Repository struct {
+	        Description githubql.String
+	    } `graphql:"repository(owner: \"octocat\", name: \"Hello-World\")"`
+	}
+
+* GraphQL arguments
+
+Becomes easy to set avatar size:
+
+	var q struct {
+	    Repository struct {
+	        Issue struct {
+	            Comments struct {
+	                Nodes []struct {
+	                    Author struct {
+	                        Login     githubql.String
+	                        AvatarURL githubql.URI `graphql:"avatarUrl(size: 72)"`
+
+* GraphQL arguments
+
+Works for more advanced GraphQL features too:
+
+	# Aliases.
+	query {
+	    helloRepo: repository(owner: "octocat", name: "Hello-World") {
+	        description
+	    }
+	    spoonRepo: repository(owner: "octocat", name: "Spoon-Knife") {
+	        description
+	    }
+	}
+
+: ---
+
+	// Are possible.
+	var q struct {
+	    HelloRepo struct {
+	        Description githubql.String
+	    } `graphql:"helloRepo: repository(owner: \"octocat\", name: \"Hello-World\")"`
+
+	    SpoonRepo struct {
+	        Description githubql.String
+	    } `graphql:"spoonRepo: repository(owner: \"octocat\", name: \"Spoon-Knife\")"`
+	}
+
+* GraphQL arguments
+
+	# Directives.
+	{
+	    friend @include(if: $withFriend) {
+	        name
+	    }
+	}
+
+: ---
+
+	// Are possible.
+	var q struct {
+	    Friend struct {
+	        Name githubql.String
+	    } `graphql:"friend @include(if: $withFriend)"`
+	}
+
+* GraphQL arguments
+
+	# Inline fragments.
+	hero {
+	    name
+	    ... on Droid {
+	        primaryFunction
+	    }
+	    ... on Human {
+	        height
+	    }
+	 }
+
+: ---
+
+	// Should be possible! I haven't tried/tested this code yet, but it seems like it'd work.
+	type DroidFragment struct {
+	    PrimaryFunction githubql.String
+	}
+	type HumanFragment struct {
+	    Height githubql.Float
+	}
+	var q struct {
+	    Hero struct {
+	        Name          githubql.String
+	        DroidFragment `graphql:"... on Droid"`
+	        HumanFragment `graphql:"... on Human"`
+	    }
+	}
+
+* GraphQL arguments
+
+Struct field tags are compile-time constant, what about variables?
+
+* GraphQL arguments
+
+GraphQL supports passing variables.
+
+That enables a viable solution:
+
+	var q struct {
+	    Repository struct {
+	        Description githubql.String
+	    } `graphql:"repository(owner: $owner, name: $name)"`
+	}
+	variables := map[string]interface{}{
+	    "owner": githubql.String(owner),
+	    "name":  githubql.String(name),
+	}
+	err := githubqlClient.Do(ctx, &q, variables)
+
+Works and scales well in my testing so far.
+
+* Go type of variables object
+
+Must be valid JSON object. By encoding/json rules, can use struct or map type.
+
+	variables := struct {
+		RepositoryOwner githubql.String
+		RepositoryName  githubql.String
+		IssueNumber     githubql.Int
+	}{githubql.String(repo.Owner), githubql.String(repo.Repo), githubql.Int(id)}
+	err = client.Query(ctx, &v, variables)
+
+vs
+
+	variables := map[string]interface{}{
+		"RepositoryOwner": githubql.String(repo.Owner),
+		"RepositoryName":  githubql.String(repo.Repo),
+		"IssueNumber":     githubql.Int(id),
+	}
+	err = client.Query(ctx, &v, variables)
+
+Iterated from former to latter ([[https://github.com/shurcooL/githubql/issues/4][issue #4]]).
+
+* Enum value names (avoiding collisions)
+
+	// IssueState represents the possible states of an issue.
+	type IssueState string
+
+	// The possible states of an issue.
+	const (
+		Open   IssueState = "OPEN"   // An issue that is still open.
+		Closed IssueState = "CLOSED" // An issue that has been closed.
+	)
+
+	// PullRequestState represents the possible states of a pull request.
+	type PullRequestState string
+
+	// The possible states of a pull request.
+	const (
+		Open   PullRequestState = "OPEN"   // A pull request that is still open.
+		Closed PullRequestState = "CLOSED" // A pull request that has been closed without being merged.
+		Merged PullRequestState = "MERGED" // A pull request that has been closed by being merged.
+	)
+
+	...
+
+* Enum value names (avoiding collisions)
+
+Solution 1, prepend the type name in front of the enum value name:
+
+	package githubql
+
+	// ReactionContent represents emojis that can be attached to Issues, Pull Requests and Comments.
+	type ReactionContent string
+
+	// Emojis that can be attached to Issues, Pull Requests and Comments.
+	const (
+	-	ThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	-	ThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	-	Laugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	+	ReactionContentThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	+	ReactionContentThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	+	ReactionContentLaugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	)
+
+Verbose.
+
+* Enum value names (avoiding collisions)
+
+Solution 2, separate by middot-like character ۰ (U+06F0).
+
+	package githubql
+
+	// ReactionContent represents emojis that can be attached to Issues, Pull Requests and Comments.
+	type ReactionContent string
+
+	// Emojis that can be attached to Issues, Pull Requests and Comments.
+	const (
+	-	ThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	-	ThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	-	Laugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	+	ReactionContent۰ThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	+	ReactionContent۰ThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	+	ReactionContent۰Laugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	)
+
+Can't be easily typed without autocomplete.
+
+* Enum value names (avoiding collisions)
+
+Solution 3, use shorter initialisms:
+
+	package githubql
+
+	// ReactionContent represents emojis that can be attached to Issues, Pull Requests and Comments.
+	type ReactionContent string
+
+	// Emojis that can be attached to Issues, Pull Requests and Comments.
+	const (
+	-	ThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	-	ThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	-	Laugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	+	RCThumbsUp   ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+	+	RCThumbsDown ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+	+	RCLaugh      ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	)
+
+Can still have collisions!
+
+* Enum value names (avoiding collisions)
+
+Solution 4, enum values in separate packages:
+
+	package githubql
+
+	// ReactionContent represents emojis that can be attached to Issues, Pull Requests and Comments.
+	type ReactionContent string
+
+: ---
+
+	// Package reactioncontent contains enum values of githubql.ReactionContent type.
+	package reactioncontent
+
+	import "github.com/shurcooL/githubql"
+
+	// Emojis that can be attached to Issues, Pull Requests and Comments.
+	const (
+		ThumbsUp   githubql.ReactionContent = "THUMBS_UP"   // Represents the 👍 emoji.
+		ThumbsDown githubql.ReactionContent = "THUMBS_DOWN" // Represents the 👎 emoji.
+		Laugh      githubql.ReactionContent = "LAUGH"       // Represents the 😄 emoji.
+	)
+
+Docs split up; more small packages; import cycle if used in main package.
+
+* Enum value names (avoiding collisions)
+
+Usage:
+
+	input := githubql.AddReactionInput{
+		SubjectID: q.Repository.Issue.ID,
+
+		Content:   githubql.ReactionContentThumbsUp,  // Solution 1
+		Content:   githubql.ReactionContent۰ThumbsUp, // Solution 2
+		Content:   githubql.RCThumbsUp,               // Solution 3
+		Content:   reactioncontent.ThumbsUp,          // Solution 4
+	}
+
+Still deciding in [[https://github.com/shurcooL/githubql/issues/8][issue #8]].
+
+* All API decisions
+
+Using [[https://github.com/shurcooL/githubql/issues?utf8=%E2%9C%93&q=label%3A%22API%20decision%22%20]["API decision" label]] in issue tracker for all API decisions.
+
+For posterity, ability to revisit, looking up tradeoffs and rationale.
+
+* Closing
+
+A Go client library for GraphQL APIs seems very viable and helpful.
+
+Package `githubql` is coming along nicely. [[https://github.com/shurcooL/githubql]]
+
+Feedback is welcome and appreciated!
