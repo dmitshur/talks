@@ -1,0 +1,79 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/static/styles.css">
+	<style type="text/css">
+		body {
+			background: white;
+			overflow: hidden;
+		}
+		#peeking-gopher {
+			position: absolute;
+			right: 80px;
+			display: none;
+			animation: peeking-gopher 10s cubic-bezier(0.41, 1.37, 0.58, 1) 0s 1 normal;
+			animation-fill-mode: both;
+		}
+		#attribution {
+			font-style: italic;
+			text-align: center;
+			display: none;
+			animation: attribution-appear 1s ease-in 5s 1 normal;
+			animation-fill-mode: both;
+		}
+		@keyframes peeking-gopher
+		{
+			0%		{ bottom: -340px; }
+			100%	{ bottom: -180px; }
+		}
+		@keyframes attribution-appear
+		{
+			0%		{ opacity: 0; }
+			100%	{ opacity: 1; }
+		}
+		div.code {
+			margin-bottom: 4px;
+		}
+	</style>
+	<script type="text/javascript">
+		function showGopher() {
+			document.getElementById('peeking-gopher').style.display = 'inline';
+			document.getElementById('attribution').style.display = 'block';
+		}
+	</script>
+</head>
+<body>
+<div class="code" contenteditable="true" spellcheck="false" onclick="showGopher()">
+
+
+<pre><span num="1">$ go tool dist list</span>
+<span num="2">android/386                                  linux/s390x</span>
+<span num="3">android/amd64                                nacl/386</span>
+<span num="4">android/arm                                  nacl/amd64p32</span>
+<span num="5">android/arm64                                nacl/arm</span>
+<span num="6">darwin/386                                   netbsd/386</span>
+<span num="7">darwin/amd64                                 netbsd/amd64</span>
+<span num="8">darwin/arm                                   netbsd/arm</span>
+<span num="9">darwin/arm64                                 openbsd/386</span>
+<span num="10">dragonfly/amd64                              openbsd/amd64</span>
+<span num="11">freebsd/386                                  openbsd/arm</span>
+<span num="12">freebsd/amd64                                plan9/386</span>
+<span num="13">freebsd/arm                                  plan9/amd64</span>
+<span num="14">linux/386                                    plan9/arm</span>
+<span num="15">linux/amd64                                  solaris/amd64</span>
+<span num="16">linux/arm                                    windows/386</span>
+<span num="17">linux/arm64                                  windows/amd64</span>
+<span num="18"><b>linux/js  &lt;- Over here!</b></span>
+<span num="19">linux/mips64</span>
+<span num="20">linux/mips64le</span>
+<span num="21">linux/ppc64</span><!--span num="22">linux/ppc64le</span-->
+</pre>
+
+
+</div>
+
+<img id="peeking-gopher" src="peeking-gopher.png">
+
+<div id="attribution">Go gopher by Renee French.</div>
+
+</body>
+</html>
