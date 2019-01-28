@@ -1,0 +1,433 @@
+What's new in Go 1.12?
+28 Jan 2019
+Tags: Go, 1.12
+
+Dmitri Shuralyov
+Go team, Google
+dmitshur@golang.org
+https://dmitri.shuralyov.com
+@dmitshur
+
+* Time flies
+
+Go 1.10 is already 11 months old!
+
+Go 1.11 was released on August 24th, 2018.
+
+On November 5th, 2018 we entered the release freeze for Go 1.12.
+
+.image flying.png
+
+.caption _Go_ _gopher_ _by_ _Renée_ _French._
+
+* Go 1.12
+
+Is Go 1.12 out yet?
+
+.code isgo112outyet.go /^import "/
+
+.play isgo112outyet.go /^\/\/ PrintGoReleases/,/^}/
+
+* Go 1.12
+
+Is Go 1.12 out yet?
+
+	$ go run golang.org/x/build/maintner/maintq list-releases
+	major:1 minor:11 patch:5 tag_name:"go1.11.5" tag_commit:"35bb62e60a7779ff82c3067903b3306ff8666471" branch_name:"release-branch.go1.11" branch_commit:"f8e8303f566652fc74125e50a23eab612e8fc749"
+	major:1 minor:10 patch:8 tag_name:"go1.10.8" tag_commit:"b0cb374daf646454998bac7b393f3236a2ab6aca" branch_name:"release-branch.go1.10" branch_commit:"bd0449f8d16a5ac1b1962c7ea07d764a7f18eca7"
+	$
+
+* Go 1.12 Beta 2
+
+.image go1.12beta2-released.png 500 _
+
+Source: [[https://twitter.com/golang/status/1083529360798302210]]
+
+* Go 1.12 Beta 2
+
+.image brad-approved.png 500 _
+
+Source: [[https://twitter.com/bradfitz/status/1083558450129395712]]
+
+* Go release cycle
+
+.image release-cycle.png 500 _
+
+Source: [[https://golang.org/s/release]]
+
+* Go 1.12 release notes
+
+.image release-notes.png 500 _
+
+Source: [[https://tip.golang.org/doc/go1.12]]
+
+* Agenda
+
+Changes since Go 1.11:
+
+- The Language
+- The Ports
+- The Tooling
+- The Runtime
+- The Standard Library
+
+Sources:
+
+.link https://tip.golang.org/doc/go1.12
+.link https://github.com/golang/go/issues?q=is:closed+is:issue+milestone:Go1.12
+.link https://dev.golang.org/release#Go1.12
+
+* Changes to the language
+
+* Language
+
+.image are-there-generics.png _ 722
+
+* Language
+
+.image no-generics-yet.png _ 722
+
+* Language
+
+Things are happening:
+
+- [[https://blog.golang.org/toward-go2]] (July 2017)
+
+- [[https://blog.golang.org/go2draft]] (August 2018)
+
+- [[https://blog.golang.org/go2-here-we-come]] (November 2018)
+
+- [[https://golang.org/wiki/Go2GenericsFeedback]]
+
+- Etc.
+
+* Ports
+
+* Ports
+
+New ports:
+
+- `windows/arm`! Supports running Go on Windows 10 IoT Core on 32-bit ARM chips such as the Raspberry Pi 3.
+
+- `aix/ppc64`! AIX 7.2 and later on POWER8 architectures (external linking, cgo, pprof, and race detector aren't yet supported).
+
+Reserved for future:
+
+- `hurd` is now a recognized value for `GOOS`, reserved for the GNU/Hurd system for use with `gccgo`.
+
+* Ports
+
+Improvements:
+
+- Race detector now supported on `linux/arm64`.
+
+- `cgo` now supported on `linux/ppc64`.
+
+- Various enhancements to WebAssembly port.
+
+- `libSystem` is used when making syscalls on macOS and iOS. Can't use `syscall.Getdirentries` on iOS.
+
+* Ports
+
+Last release to support:
+
+- FreeBSD 10.x (EOLed). Go 1.13 will require FreeBSD 11.2+ or FreeBSD 12.0+.
+
+- macOS 10.10 Yosemite. Go 1.13 will require macOS 10.11 El Capitan or later.
+
+* Tooling
+
+* Tooling
+
+`go` `tool` `vet` is no longer supported.
+
+If you're currently doing:
+
+	go tool vet .
+
+May replace with:
+
+	go vet ./...
+
+* Tooling
+
+`godoc` and `go` `doc`:
+
+- `godoc` no longer has a CLI and is only a web server. Use `go` `doc` for CLI.
+
+	$ godoc -help
+	usage: godoc
+	  ...
+	  -http string
+	    	HTTP service address (default "localhost:6060")
+	  ...
+
+- `go` `doc` gets a new `-all` flag to print all exported APIs like `godoc` used to.
+
+	$ go doc -help
+	Usage of [go] doc:
+		go doc
+		go doc <pkg>
+		go doc <sym>[.<method>]
+		go doc [<pkg>].<sym>[.<method>]
+		go doc <pkg> <sym>[.<method>]
+
+* Tooling
+
+Modules:
+
+- go command supports module-aware operations outside of a module directory with `GO111MODULE=on`.
+
+Only those that don't need current working directory or explicit go.mod editing. E.g., `go` `get`, `go` `list`, and `go` `mod` `download` behave as if in empty module. `go` `env` `GOMOD` reports system's null device (`/dev/null`).
+
+- go commands that download and extract modules are now safe to invoke concurrently.
+
+The module cache (`GOPATH/pkg/mod`) must reside in a filesystem that supports file locking.
+
+- New `go` directive in `go.mod` files indicates language version. E.g., `go` `1.12`.
+
+* Tooling
+
+Build cache requirement:
+
+- The build cache is now required. A step toward eliminating $GOPATH/pkg.
+
+- Setting the environment variable `GOCACHE=off` will cause go commands that write to the cache to fail.
+
+* Tooling
+
+Binary-only packages:
+
+- Go 1.12 is the last release that will support binary-only packages.
+
+* Tooling
+
+Cgo:
+
+- C type `EGLDisplay` will be translated to the Go type `uintptr`.
+
+- Mangled C names are no longer accepted in packages that use cgo. For example, use the documented cgo name `C.char` rather than the mangled name `_Ctype_char`.
+
+* Tooling
+
+Compiler toolchain:
+
+- More functions are eligible for inlining by default, including functions that do nothing but call another function. Use `runtime.CallersFrames` instead of iterating over the result of `runtime.Callers` directly.
+
+- Live variable analysis has improved. Finalizers may run sooner, use `runtime.KeepAlive` if needed.
+
+- Many improvements to the DWARF debug information produced by the compiler.
+
+- The obsolete "safe" compiler mode (enabled by the `-u` gcflag) has been removed.
+
+- Stack frame pointers now maintained on `linux/arm64` for the benefit of profiling tools like `perf`.
+
+- Compiler accepts a `-lang` flag to set the Go language version to use. For example, `-lang=go1.8` causes the compiler to error on type aliases.
+
+* Runtime
+
+* Runtime
+
+- Timer and deadline code is faster and scales better with higher numbers of CPUs, improving performance of manipulating network connection deadlines.
+
+- Significantly improved performance of sweeping when a large fraction of the heap remains live, reducing allocation latency right after a GC.
+
+- Releases memory back to OS more aggressively, especially after large allocations that can't reuse existing heap space.
+
+* Runtime
+
+- On Linux, uses `MADV_FREE` advice to release unused memory; more efficient but may result in higher reported RSS.
+
+- `cpu.extension=off` for `GODEBUG` to disable the use of optional CPU instruction set extensions in the standard library and runtime.
+
+- Stopped overcounting large heap allocations, resulting in improved accuracy of memory profiles.
+
+* Standard library
+
+* Standard library
+
+Let's begin with the most visible change:
+
+- `crypto/tls` gains TLS 1.3 support! 🔐
+
+.image tls-start.png 160 _
+
+(_A_ _few_ _moments_ _later_...)
+
+.image tls-later.png 160 _
+
+* TLS 1.3 (RFC 8446) support in crypto/tls
+
+- Go programs will automatically negotiate TLS 1.3 if available, as long as didn't set explicit `MaxVersion` in `Config`.
+
+- All TLS 1.2 features except `TLSUnique` in `ConnectionState` and renegotiation are available in TLS 1.3 and provide equivalent or better security and performance.
+
+- TLS 1.3 cipher suites are not configurable. All supported cipher suites are safe.
+
+- Early data (also called "0-RTT mode") is not currently supported as a client or server. Additionally, a Go 1.12 server does not support skipping unexpected early data if a client sends it. Considerations for load-balancing.
+
+- Errors on the client will be returned by the first `Read`, not `Handshake`. E.g., if the server rejects the client certificate.
+
+* Standard library
+
+Minor changes and updates with Go 1 promise of compatibility in mind:
+
+- `fmt`
+- `net/...`
+- `crypto/...`
+- `bytes`, `strings`
+- `database/sql`
+- `expvar`
+- `go/...`
+- `image/...`
+- `math/...`
+- More!
+
+* Standard library
+
+`fmt`
+
+- Maps are now printed in key-sorted order to ease testing.
+
+For example, `fmt.Print` ing this map:
+
+	map[uint8]string{7: "bar", 3: "foo"}
+
+With Go 1.11:
+
+	map[7:bar 3:foo]
+	// or
+	map[3:foo 7:bar]
+
+With Go 1.12:
+
+	map[3:foo 7:bar]
+
+- Non-reflexive map key values like `NaN` were previously displayed as `<nil>`, now fixed.
+
+* Standard library
+
+`os`
+
+- New `ProcessState.ExitCode` method returns the process's exit code.
+
+- New function `UserHomeDir` returns the current user's home directory.
+
+- `RemoveAll` supports paths longer than 4096 characters on most Unix systems.
+
+* Standard library
+
+`net/http/httputil`
+
+- `ReverseProxy` now automatically proxies WebSocket requests.
+
+* Standard library
+
+`net/http`
+
+- Misdirected HTTP requests to HTTPS servers rejected with a plaintext "400 Bad Request" response.
+
+- `Transport` no longer rejects HTTP responses which declare HTTP Trailers but don't use chunked encoding. Instead, declared trailers are ignored.
+
+- `Transport` no longer handles `MAX_CONCURRENT_STREAMS` values advertised from HTTP/2 servers as strictly as it did during Go 1.10 and Go 1.11. Instead, default behavior is more like Go 1.9, new TCP connections are created as needed.
+
+- New `Client.CloseIdleConnections` method is short for `Client.Transport.CloseIdleConnections`.
+
+* Standard library
+
+`net`
+
+- Fast Fallback ("Happy Eyeballs") is enabled by default; `Dialer.DualStack` is ignored and deprecated. Can be disabled.
+
+- TCP keep-alives enabled by default if `Dialer.KeepAlive` is zero. Can be disabled.
+
+- On Linux, the `splice` system call is used when copying from a `UnixConn` to a `TCPConn`.
+
+* Standard library
+
+`io`
+
+- New `StringWriter` interface:
+
+	// StringWriter is the interface that wraps the WriteString method.
+	type StringWriter interface {
+		WriteString(s string) (n int, err error)
+	}
+
+* Standard library
+
+`reflect`
+
+- A new `MapIter` type is an iterator for ranging over a map, follows same iteration semantics as a `range` statement.
+
+* Standard library
+
+`bytes`, `strings`
+
+- New `ReplaceAll` returns a copy of a byte slice/string with all non-overlapping instances of a value replaced by another.
+
+- `new(Reader)` is now functionally equivalent to `NewReader(nil)`.
+
+* Standard library
+
+`syscall/js`
+
+- Callbacks now get executed synchronously, which is necessary for APIs of many JavaScript libraries.
+
+- New `Wrapper` interface is used by `ValueOf`.
+
+- New `Value.Truthy` method reports the JavaScript "truthiness".
+
+- Zero `Value` now represents the JavaScript `undefined` value, not number zero.
+
+- `Callback` renamed to `Func`, `NewCallback` renamed to `FuncOf`.
+
+* Standard library
+
+`crypto/rc4`
+
+- Removed optimized assembly implementations. RC4 is insecure and should only be used for compatibility with legacy systems.
+
+* Standard library
+
+`image`
+
+- `RegisterFormat` is now safe for concurrent use.
+
+`image/png`
+
+- Paletted images with fewer than 16 colors encode to smaller output.
+
+* Standard library
+
+`time`
+
+- Time zone database in `GOROOT/lib/time/zoneinfo.zip` has been updated to version 2018i. Only used if a time zone database is not provided by OS.
+
+* Standard library
+
+`math`
+
+- `Sin`, `Cos`, `Tan`, and `Sincos` apply Payne-Hanek range reduction to huge arguments for more accurate answers.
+
+`math/bits`
+
+- New extended precision operations `Add`, `Sub`, `Mul`, and `Div` are available in `uint`, `uint32`, and `uint64` versions.
+
+* Standard library
+
+`syscall`
+
+- New `Syscall18` added for Windows, allowing for calls with up to 18 arguments.
+
+* Standard library
+
+`testing`
+
+- `-benchtime` flag now supports setting an explicit iteration count with "x". For example, `-benchtime=100x`.
+
+* Standard library
+
+Your favorite change missing here or in the Go 1.12 release notes?
+
+Let me know!
